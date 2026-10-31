@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` BINARY(16) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `pan` CHAR(10) CHARACTER SET ascii COLLATE ascii_bin,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY(id),
+  UNIQUE KEY uq_users_email(email),
+  UNIQUE KEY uq_users_pan(pan),
+  CONSTRAINT chk_users_pan CHECK (pan REGEXP '^[A-Z]{5}[0-9]{4}[A-Z]$')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
