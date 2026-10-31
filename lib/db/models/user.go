@@ -13,8 +13,8 @@ type User struct {
 	Name      string    `db:"name"        json:"name"`
 	Email     string    `db:"email"       json:"email"`
 	PAN       string    `db:"pan"         json:"pan"`
-	CreatedAt time.Time `db:"created_at"  json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"  json:"updated_at"`
+	CreatedAt time.Time `db:"created_at"  json:"createdAt"`
+	UpdatedAt time.Time `db:"updated_at"  json:"updatedAt"`
 }
 
 var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")

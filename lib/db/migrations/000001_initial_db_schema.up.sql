@@ -10,3 +10,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY uq_users_pan(pan),
   CONSTRAINT chk_users_pan CHECK (pan REGEXP '^[A-Z]{5}[0-9]{4}[A-Z]$')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `data_sources` (
+  `code` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `name` VARCHAR(64) NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY(code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO data_sources (code, name) VALUES
+  ('groww', 'Groww');
