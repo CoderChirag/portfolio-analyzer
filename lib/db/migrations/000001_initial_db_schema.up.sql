@@ -12,11 +12,13 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `data_sources` (
+  `id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `code` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   `name` VARCHAR(64) NOT NULL,
   `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  PRIMARY KEY(code)
+  PRIMARY KEY(id),
+  UNIQUE KEY uq_data_sources_code (code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO data_sources (code, name) VALUES
-  ('groww', 'Groww');
+INSERT INTO data_sources (id, code, name) VALUES
+  (1, 'groww', 'Groww');
