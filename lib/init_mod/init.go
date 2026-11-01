@@ -1,21 +1,19 @@
 package init_mod
 
 import (
+	"coderchirag/folio-tracker/lib/config"
 	"coderchirag/folio-tracker/lib/dbinit"
 	"database/sql"
 	"fmt"
 	"log/slog"
 )
 
-func InitApp() error {
-	env, err := newEnvCfg()
-	if err != nil {
-		return err
-	}
-	slog.Info("init-app starting", "db", env.dbName, "host", env.dbHost)
+func InitApp(cfg *config.Config) error {
+
+	slog.Info("init-app starting", "db", cfg.DbName, "host", cfg.DbHost)
 
 	// Admin connection (no default DB) for database + user/grant creation
-	adminDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/", env.dbRootUser, env.dbRootPassword, env.dbHost, env.dbPort)
+	adminDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/", cfg.DbRootUser, cfg.DbRootPassword, cfg.DbHost, cfg.DbPort)
 	adminDB, err := sql.Open("mysql", adminDSN)
 	if err != nil {
 		return fmt.Errorf("open admin connection: %w", err)
@@ -25,16 +23,16 @@ func InitApp() error {
 		return fmt.Errorf("ping admin connection: %w", err)
 	}
 
-	if err := dbinit.EnsureDatabase(adminDB, env.dbName); err != nil {
+	if err := dbinit.EnsureDatabase(adminDB, cfg.DbName); err != nil {
 		return err
 	}
-	if err = dbinit.EnsureUserGrants(adminDB, env.dbName, env.dbFolioUser, env.dbFolioPassword); err != nil {
+	if err = dbinit.EnsureUserGrants(adminDB, cfg.DbName, cfg.DbFolioUser, cfg.DbFolioPassword); err != nil {
 		return err
 	}
 
 	// folio user connection scoped to the schema, multistatements for the migrations.
-	migrateDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true",
-		env.dbFolioUser, env.dbFolioPassword, env.dbHost, env.dbPort, env.dbName)
+	migrateDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true&loc=UTC&time_zone=%%27%%2B00%%3A00%%27",
+		cfg.DbFolioUser, cfg.DbFolioPassword, cfg.DbHost, cfg.DbPort, cfg.DbName)
 	migrateDB, err := sql.Open("mysql", migrateDSN)
 	if err != nil {
 		return fmt.Errorf("open migrate connection: %w", err)
@@ -44,5 +42,5 @@ func InitApp() error {
 		return fmt.Errorf("ping migrate connection: %w", err)
 	}
 
-	return dbinit.Migrate(migrateDB, env.dbName, env.migrationsDir)
+	return dbinit.Migrate(migrateDB, cfg.DbName, cfg.MigrationsDir)
 }

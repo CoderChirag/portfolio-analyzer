@@ -1,4 +1,4 @@
-package models
+package id
 
 import (
 	"database/sql/driver"
@@ -10,11 +10,11 @@ import (
 // ID is a UUIDv7 stored in MySQL as BINARY(16)
 type ID uuid.UUID
 
-func NewID() ID {
+func New() ID {
 	return ID(uuid.Must(uuid.NewV7()))
 }
 
-func ParseID(s string) (ID, error) {
+func Parse(s string) (ID, error) {
 	id, err := uuid.Parse(s)
 	return ID(id), err
 }
@@ -42,10 +42,13 @@ func (id ID) MarshalText() ([]byte, error) {
 }
 
 func (id *ID) UnmarshalText(b []byte) error {
-	parsed, err := ParseID(string(b))
+	parsed, err := Parse(string(b))
 	if err != nil {
 		return err
 	}
 	*id = ID(parsed)
 	return nil
 }
+
+// IsZero reports whether id is the zero value (never assigned).
+func (id ID) IsZero() bool { return id == ID{} }
