@@ -2,10 +2,10 @@ package models
 
 import (
 	"coderchirag/folio-tracker/lib/id"
-	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -29,6 +29,7 @@ var (
 	ErrListingInstrumentRequired = errors.New("instrument is required")
 	ErrListingAssetTypeInvalid   = errors.New("only stocks and ETFs can have exchange listings")
 	ErrListingExchangeInvalid    = errors.New("exchange must be NSE or BSE")
+	ErrListingSymbolRequired     = errors.New("symbol is required")
 	ErrListingSymbolTooLong      = errors.New("symbol must be at most 32 characters")
 	ErrListingSymbolInvalid      = errors.New("symbol may contain only A-Z, 0-9, '-', '&' and '_'")
 )
@@ -38,8 +39,8 @@ var (
 type InstrumentListing struct {
 	ID           id.ID     `db:"id"             json:"id"`
 	InstrumentID id.ID     `db:"instrument_id"  json:"instrumentId"`
-	Exchange     *Exchange `db:"exchange"       json:"exchange,omitempty"`
-	Symbol       *string   `db:"symbol"         json:"symbol,omitempty"`
+	Exchange     Exchange  `db:"exchange"       json:"exchange"`
+	Symbol       string    `db:"symbol"         json:"symbol"`
 	CreatedAt    time.Time `db:"created_at"     json:"createdAt"`
 	UpdatedAt    time.Time `db:"updated_at"     json:"updatedAt"`
 }
@@ -65,8 +66,8 @@ func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error)
 	l := &InstrumentListing{
 		ID:           id.New(),
 		InstrumentID: p.Instrument.ID,
-		Exchange:     (*Exchange)(utils.OptionalUpper(string(p.Exchange))),
-		Symbol:       utils.OptionalUpper(p.Symbol),
+		Exchange:     Exchange(strings.ToUpper(strings.TrimSpace(string(p.Exchange)))),
+		Symbol:       strings.ToUpper(strings.TrimSpace(p.Symbol)),
 	}
 	if err := l.Validate(p.Instrument, p.AssetType); err != nil {
 		return nil, err
@@ -89,17 +90,17 @@ func (l *InstrumentListing) Validate(inst *Instrument, at AssetType) error {
 		errs.Add("assetType", ErrListingAssetTypeInvalid)
 	}
 
-	if l.Exchange != nil && !l.Exchange.IsValid() {
+	if !l.Exchange.IsValid() {
 		errs.Add("exchange", ErrListingExchangeInvalid)
 	}
 
-	if l.Symbol != nil {
-		switch {
-		case len(*l.Symbol) > listingSymbolMaxLen:
-			errs.Add("symbol", ErrListingSymbolTooLong)
-		case !symbolPattern.MatchString(*l.Symbol):
-			errs.Add("symbol", ErrListingSymbolInvalid)
-		}
+	switch {
+	case l.Symbol == "":
+		errs.Add("symbol", ErrListingSymbolRequired)
+	case len(l.Symbol) > listingSymbolMaxLen:
+		errs.Add("symbol", ErrListingSymbolTooLong)
+	case !symbolPattern.MatchString(l.Symbol):
+		errs.Add("symbol", ErrListingSymbolInvalid)
 	}
 
 	return errs.Err()

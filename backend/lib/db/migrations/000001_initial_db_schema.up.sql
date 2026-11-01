@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS `instruments` (
 CREATE TABLE IF NOT EXISTS `instrument_listings` (
   `id` BINARY(16) NOT NULL,
   `instrument_id` BINARY(16) NOT NULL,
-  `exchange` VARCHAR(8) CHARACTER SET ascii COLLATE ascii_bin NULL,
-  `symbol` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  `exchange` VARCHAR(8) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `symbol` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`),
@@ -64,8 +64,8 @@ CREATE TABLE IF NOT EXISTS `instrument_listings` (
   UNIQUE KEY `uq_listings_instrument_exchange` (`instrument_id`, `exchange`),
   KEY `idx_listings_symbol` (`symbol`),
   CONSTRAINT `fk_listings_instrument` FOREIGN KEY (`instrument_id`) REFERENCES `instruments` (`id`),
-  CONSTRAINT `chk_listings_exchange` CHECK (`exchange` IS NULL OR `exchange` IN ('NSE', 'BSE')),
-  CONSTRAINT `chk_listings_symbol` CHECK (`symbol` IS NULL OR `symbol` REGEXP '^[A-Z0-9&_-]+$')
+  CONSTRAINT `chk_listings_exchange` CHECK (`exchange` IN ('NSE', 'BSE')),
+  CONSTRAINT `chk_listings_symbol` CHECK (`symbol` REGEXP '^[A-Z0-9&_-]+$')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 1:1 extension of instruments for mutual funds.
