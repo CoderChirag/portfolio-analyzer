@@ -95,6 +95,74 @@ CREATE TABLE IF NOT EXISTS `instrument_aliases` (
   CONSTRAINT `fk_aliases_instrument` FOREIGN KEY (`instrument_id`) REFERENCES `instruments` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Reference Table for keeping record of all transaction types.
+-- direction: +1 adds units to a holding, -1 removes them.
+CREATE TABLE IF NOT EXISTS `transaction_types` (
+  `id` SMALLINT UNSIGNED NOT NULL,
+  `code` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `name` VARCHAR(64) NOT NULL,
+  `direction` TINYINT NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_transaction_types_code` (`code`),
+  CONSTRAINT `chk_transaction_types_direction` CHECK (`direction` IN (-1, 1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Core ledger: what every asset class has. Asset-specific data lives in extension tables.
+CREATE TABLE IF NOT EXISTS `transactions` (
+  `id` BINARY(16) NOT NULL,
+  `user_id` BINARY(16) NOT NULL,
+  `data_source_id` SMALLINT UNSIGNED NOT NULL,
+  `instrument_id` BINARY(16) NOT NULL,
+  `transaction_type_id` SMALLINT UNSIGNED NOT NULL,
+  -- Indian calendar date of the trade; drives FIFO order and FY boundaries.
+  `trade_date` DATE NOT NULL,
+  -- UTC instant, when the source reports a time.
+  `executed_at` DATETIME(3) NULL,
+  -- Always positive; the sign comes from transaction_types.direction.
+  `quantity` DECIMAL(20,6) NOT NULL,
+  -- Gross trade value before charges, as reported. Authoritative for cost basis.
+  `amount` DECIMAL(20,4) NOT NULL,
+  -- Per-unit price, only when the source reports it; never derived from amount / quantity.
+  `price` DECIMAL(20,6) NULL,
+  `currency` CHAR(3) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'INR',
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `idx_txn_user_instrument_date` (`user_id`, `instrument_id`, `trade_date`, `executed_at`),
+  KEY `idx_txn_user_source_date` (`user_id`, `data_source_id`, `trade_date`),
+  KEY `idx_txn_user_date` (`user_id`, `trade_date`),
+  KEY `idx_txn_source` (`data_source_id`),
+  KEY `idx_txn_instrument` (`instrument_id`),
+  KEY `idx_txn_type` (`transaction_type_id`),
+  CONSTRAINT `fk_txn_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_txn_source` FOREIGN KEY (`data_source_id`) REFERENCES `data_sources` (`id`),
+  CONSTRAINT `fk_txn_instrument` FOREIGN KEY (`instrument_id`) REFERENCES `instruments` (`id`),
+  CONSTRAINT `fk_txn_type` FOREIGN KEY (`transaction_type_id`) REFERENCES `transaction_types` (`id`),
+  CONSTRAINT `chk_txn_quantity` CHECK (`quantity` > 0),
+  CONSTRAINT `chk_txn_amount` CHECK (`amount` > 0),
+  CONSTRAINT `chk_txn_price` CHECK (`price` IS NULL OR `price` > 0),
+  CONSTRAINT `chk_txn_currency` CHECK (`currency` REGEXP '^[A-Z]{3}$')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 1:1 extension of transactions for exchange-traded instruments (stocks, ETFs).
+CREATE TABLE IF NOT EXISTS `stock_trade_details` (
+  `transaction_id` BINARY(16) NOT NULL,
+  -- Copy of transactions.trade_date: exchange order ids restart every trading day,
+  -- so the dedup key needs the date. Written once by the importer, never updated.
+  `trade_date` DATE NOT NULL,
+  `exchange` VARCHAR(8) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `exchange_order_id` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`transaction_id`),
+  UNIQUE KEY `uq_stock_trades_order` (`exchange`, `trade_date`, `exchange_order_id`),
+  CONSTRAINT `fk_stock_trades_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`),
+  CONSTRAINT `chk_stock_trades_exchange` CHECK (`exchange` IN ('NSE', 'BSE')),
+  CONSTRAINT `chk_stock_trades_order_id` CHECK (`exchange_order_id` REGEXP '^[A-Za-z0-9]+$')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 INSERT INTO `data_sources` (`id`, `code`, `name`) VALUES
   (1, 'groww', 'Groww');
 
@@ -102,3 +170,7 @@ INSERT INTO `asset_types` (`id`, `code`, `name`) VALUES
   (1, 'STOCK', 'Stock'),
   (2, 'ETF', 'ETF'),
   (3, 'MF', 'Mutual Fund');
+
+INSERT INTO `transaction_types` (`id`, `code`, `name`, `direction`) VALUES
+  (1, 'BUY', 'Buy', 1),
+  (2, 'SELL', 'Sell', -1);

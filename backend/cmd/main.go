@@ -57,6 +57,13 @@ func main() {
 	if err != nil {
 		fatal(fmt.Sprintf("lookup %q failed", models.AssetTypeTable), err)
 	}
+	_, err = lookup.Load[models.TransactionTypeID, models.TransactionTypeCode, models.TransactionType](
+		context.Background(), sqlDB, models.TransactionTypeTable,
+		models.TxnBuy, models.TxnSell,
+	)
+	if err != nil {
+		fatal(fmt.Sprintf("lookup %q failed", models.TransactionTypeTable), err)
+	}
 
 }
 

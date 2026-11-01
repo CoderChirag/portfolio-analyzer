@@ -27,8 +27,11 @@ func Load[ID comparable, Code ~string, T Entry[ID, Code]](
 	ctx context.Context, db *sqlx.DB, tableName string, required ...Code,
 ) (*Registry[ID, Code, T], error) {
 	var rows []T
-	if err := db.SelectContext(ctx, &rows,
-		fmt.Sprintf(`SELECT id, code, name, created_at FROM %s ORDER BY id`, tableName),
+	// SELECT * so table-specific columns (e.g. transaction_types.direction) load too.
+	// Unsafe ignores columns the struct doesn't have yet, so an expand migration that
+	// adds a column doesn't break replicas still running the previous build.
+	if err := db.Unsafe().SelectContext(ctx, &rows,
+		fmt.Sprintf(`SELECT * FROM %s ORDER BY id`, tableName),
 	); err != nil {
 		return nil, fmt.Errorf("load lookup: %w", err)
 	}
