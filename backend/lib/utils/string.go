@@ -63,3 +63,12 @@ func OptionalUpper(s string) *string {
 	}
 	return &s
 }
+
+// OptionalTrim trims s; returns nil if empty, otherwise the trimmed copy.
+func OptionalTrim(s string) *string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return nil
+	}
+	return &s
+}
