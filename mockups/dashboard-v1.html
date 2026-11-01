@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Portfolio mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121212;--card:#1b1b1b;--card2:#232323;--line:#2c2c2c;--t1:#f1f1f1;--t2:#a5a5a5;--t3:#6f6f6f;--g:#00b386;--gs:rgba(0,179,134,.14);--r:#eb5b3c;--rs:rgba(235,91,60,.14);--b:#5367ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:var(--t1);font-family:Inter,system-ui,sans-serif;font-size:14px;padding:24px 16px 80px}
+.note{max-width:1180px;margin:0 auto 14px;color:var(--t2);font-size:13px;line-height:1.5}
+.note b{color:var(--t1)}
+.screen-label{max-width:1180px;margin:40px auto 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--b);font-weight:600}
+.app{max-width:1180px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.nav{display:flex;align-items:center;gap:28px;padding:14px 28px;border-bottom:1px solid var(--line)}
+.logo{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#5367ff 50%,#00d09c 50%)}
+.tab{color:var(--t2);font-weight:500;padding:6px 0;border-bottom:2px solid transparent}
+.tab.on{color:var(--t1);border-color:var(--t1)}
+.sp{flex:1}
+.sync{color:var(--t3);font-size:12px;text-align:right;line-height:1.5}
+.btn{background:var(--g);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;font-size:13px}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--t1)}
+.body{padding:28px}
+.grid{display:grid;gap:20px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.lbl{color:var(--t2);font-size:12px;margin-bottom:6px}
+.big{font-size:30px;font-weight:600;letter-spacing:-.01em}
+.mid{font-size:18px;font-weight:600}
+.pos{color:var(--g)}.neg{color:var(--r)}
+.sub{color:var(--t2);font-size:13px;margin-top:4px}
+.pills{display:flex;gap:6px}
+.pill{padding:5px 12px;border-radius:999px;font-size:12px;color:var(--t2);border:1px solid var(--line)}
+.pill.on{color:var(--g);border-color:var(--g);background:var(--gs)}
+table{width:100%;border-collapse:collapse}
+th{color:var(--t3);font-weight:500;font-size:12px;text-align:right;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:14px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+tr.exited td{color:var(--t2)}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--card2);color:var(--t2);margin-left:6px;vertical-align:middle}
+.nm{font-weight:500;color:var(--t1)}
+.small{font-size:12px;color:var(--t3)}
+.callout{background:var(--rs);border:1px solid rgba(235,91,60,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t1)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--t2)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 1fr 90px;align-items:center;gap:0;font-size:13px;padding:6px 0}
+.bar-row .l{color:var(--t2)}
+.bar-row .v{text-align:right;font-weight:500}
+</style></head><body>
+
+<div class="note"><b>Mockups, not final.</b> Three screens, top to bottom: the top-level Overview, the Stocks dashboard (the MF one has the same layout), and one instrument's detail page using your ETF example. All numbers are made up. Dark Groww-style palette: near-black background, Groww green for gains, orange-red for losses.</div>
+
+<!-- ============ SCREEN 1 ============ -->
+<div class="screen-label">1 · Overview: all your money</div>
+<div class="app">
+  <div class="nav">
+    <div class="logo"></div>
+    <span class="tab on">Overview</span><span class="tab">Stocks</span><span class="tab">Mutual Funds</span>
+    <div class="sp"></div>
+    <div class="sync">Prices updated 2 min ago<br>Transactions as of 27 Oct 2026</div>
+    <button class="btn">Update data</button>
+  </div>
+  <div class="body grid">
+    <div class="grid" style="grid-template-columns:1.3fr 1fr">
+      <div class="c">
+        <div class="lbl">Current value</div>
+        <div class="big">₹14,82,350</div>
+        <div class="sub">Currently invested ₹13,40,000</div>
+        <div style="height:18px"></div>
+        <div class="lbl">Overall P&amp;L (lifetime, all instruments ever held)</div>
+        <div class="big pos">+₹96,420 <span style="font-size:16px">+6.1%</span></div>
+        <div class="sub">on ₹15,80,000 total ever invested</div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="c"><div class="lbl">Unrealized</div><div class="mid pos">+₹1,42,350</div><div class="small">on current holdings</div></div>
+        <div class="c"><div class="lbl">Realized</div><div class="mid neg">−₹38,710</div><div class="small">booked from sells</div></div>
+        <div class="c"><div class="lbl">Dividends</div><div class="mid">₹0</div><div class="small">source pending</div></div>
+        <div class="c"><div class="lbl">Charges paid</div><div class="mid neg">−₹7,220</div><div class="small">brokerage, STT, stamp duty…</div></div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="hdr">
+        <div class="legend"><span><span class="dot" style="background:var(--g)"></span>Current value</span><span><span class="dot" style="background:var(--t3)"></span>Invested</span></div>
+        <div class="pills"><span class="pill">1M</span><span class="pill">6M</span><span class="pill">1Y</span><span class="pill">3Y</span><span class="pill on">All</span></div>
+      </div>
+      <svg viewBox="0 0 1100 220" width="100%" height="220">
+        <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00b386" stop-opacity=".28"/><stop offset="1" stop-color="#00b386" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,200 L120,190 L220,170 L320,172 L420,150 L520,155 L600,120 L700,130 L780,100 L860,95 L940,70 L1020,60 L1100,45 L1100,220 L0,220Z" fill="url(#ga)"/>
+        <path d="M0,200 L120,190 L220,170 L320,172 L420,150 L520,155 L600,120 L700,130 L780,100 L860,95 L940,70 L1020,60 L1100,45" fill="none" stroke="#00b386" stroke-width="2"/>
+        <path d="M0,202 L120,195 L220,180 L320,180 L420,160 L520,160 L600,140 L700,140 L780,115 L860,115 L940,95 L1020,95 L1100,80" fill="none" stroke="#6f6f6f" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="0" y="216" fill="#6f6f6f" font-size="11">Jan 2022</text><text x="1040" y="216" fill="#6f6f6f" font-size="11">Oct 2026</text>
+      </svg>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div class="c">
+        <div class="hdr"><span class="mid">Stocks</span><span class="small">View →</span></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><div class="lbl">Current value</div><div>₹5,10,200</div></div>
+          <div><div class="lbl">Overall P&amp;L</div><div class="neg">−₹21,380</div></div>
+          <div><div class="lbl">Realized / Unrealized</div><div><span class="neg">−₹52,100</span> / <span class="pos">+₹36,940</span></div></div>
+        </div>
+      </div>
+      <div class="c">
+        <div class="hdr"><span class="mid">Mutual Funds</span><span class="small">View →</span></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><div class="lbl">Current value</div><div>₹9,72,150</div></div>
+          <div><div class="lbl">Overall P&amp;L</div><div class="pos">+₹1,17,800</div></div>
+          <div><div class="lbl">Realized / Unrealized</div><div><span class="pos">+₹13,390</span> / <span class="pos">+₹1,05,410</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 2 ============ -->
+<div class="screen-label">2 · Stocks dashboard (Mutual Funds looks the same)</div>
+<div class="app">
+  <div class="nav">
+    <div class="logo"></div>
+    <span class="tab">Overview</span><span class="tab on">Stocks</span><span class="tab">Mutual Funds</span>
+    <div class="sp"></div>
+    <div class="sync">Prices updated 2 min ago<br>Transactions as of 27 Oct 2026</div>
+    <button class="btn">Update data</button>
+  </div>
+  <div class="body grid">
+    <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:12px">
+      <div class="c"><div class="lbl">Current value</div><div class="mid">₹5,10,200</div><div class="small">invested ₹4,73,260</div></div>
+      <div class="c"><div class="lbl">Overall P&amp;L</div><div class="mid neg">−₹21,380</div><div class="small">−3.2% lifetime</div></div>
+      <div class="c"><div class="lbl">Unrealized</div><div class="mid pos">+₹36,940</div></div>
+      <div class="c"><div class="lbl">Realized</div><div class="mid neg">−₹52,100</div></div>
+      <div class="c"><div class="lbl">Charges paid</div><div class="mid neg">−₹6,220</div></div>
+    </div>
+
+    <div class="c">
+      <div class="hdr"><span class="mid">Lifetime P&amp;L by stock</span><span class="legend"><span><span class="dot" style="background:var(--r)"></span>Loss</span><span><span class="dot" style="background:var(--g)"></span>Profit</span></span></div>
+      <div class="bar-row"><span class="l">TATAMOTORS</span><span style="display:flex;justify-content:flex-end"><span style="width:0"></span></span><span><span style="display:block;height:14px;width:78%;background:var(--g);border-radius:0 3px 3px 0"></span></span><span class="v pos">+₹28,400</span></div>
+      <div class="bar-row"><span class="l">HDFCBANK</span><span></span><span><span style="display:block;height:14px;width:42%;background:var(--g);border-radius:0 3px 3px 0"></span></span><span class="v pos">+₹15,210</span></div>
+      <div class="bar-row"><span class="l">NIFTYBEES</span><span style="display:flex;justify-content:flex-end"><span style="display:block;height:14px;width:28%;background:var(--r);border-radius:3px 0 0 3px"></span></span><span></span><span class="v neg">−₹10,186</span></div>
+      <div class="bar-row"><span class="l">ZOMATO <span class="tag">exited</span></span><span style="display:flex;justify-content:flex-end"><span style="display:block;height:14px;width:55%;background:var(--r);border-radius:3px 0 0 3px"></span></span><span></span><span class="v neg">−₹19,804</span></div>
+      <div class="bar-row"><span class="l">PAYTM <span class="tag">exited</span></span><span style="display:flex;justify-content:flex-end"><span style="display:block;height:14px;width:96%;background:var(--r);border-radius:3px 0 0 3px"></span></span><span></span><span class="v neg">−₹35,000</span></div>
+    </div>
+
+    <div class="c">
+      <div class="hdr"><span class="mid">All stocks ever held</span><div class="pills"><span class="pill on">All (14)</span><span class="pill">Holding (9)</span><span class="pill">Exited (5)</span></div></div>
+      <table>
+        <tr><th>Name</th><th>Invested now</th><th>Current value</th><th>Unrealized</th><th>Realized</th><th>Charges</th><th>Overall P&amp;L</th></tr>
+        <tr><td class="nm">TATAMOTORS<div class="small">40 shares</div></td><td>₹28,600</td><td>₹38,400</td><td class="pos">+₹9,800</td><td class="pos">+₹19,050</td><td class="neg">−₹450</td><td class="pos">+₹28,400</td></tr>
+        <tr><td class="nm">NIFTYBEES<div class="small">330 units</div></td><td>₹88,000</td><td>₹90,000</td><td class="pos">+₹2,000</td><td class="neg">−₹12,000</td><td class="neg">−₹186</td><td class="neg">−₹10,186</td></tr>
+        <tr class="exited"><td class="nm">PAYTM <span class="tag">exited</span><div class="small">0 shares</div></td><td>₹0</td><td>₹0</td><td>—</td><td class="neg">−₹34,610</td><td class="neg">−₹390</td><td class="neg">−₹35,000</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 3 ============ -->
+<div class="screen-label">3 · One instrument: your ETF example</div>
+<div class="app">
+  <div class="nav">
+    <div class="logo"></div>
+    <span class="tab">Overview</span><span class="tab on">Stocks</span><span class="tab">Mutual Funds</span>
+    <div class="sp"></div>
+    <button class="btn ghost">← All stocks</button>
+  </div>
+  <div class="body grid">
+    <div class="grid" style="grid-template-columns:1.4fr 1fr">
+      <div>
+        <div class="mid" style="font-size:22px">Nippon India ETF Nifty 50 BeES</div>
+        <div class="sub">NIFTYBEES · NSE · LTP ₹272.73 <span class="pos">+0.84%</span></div>
+        <div style="height:18px"></div>
+        <div class="lbl">Overall P&amp;L, all trades ever</div>
+        <div class="big neg">−₹10,186</div>
+        <div style="height:12px"></div>
+        <div class="callout">Groww shows <b class="pos">+₹2,000</b> here, because it only counts your current lot. Your first lot was sold at a ₹12,000 loss.</div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="c"><div class="lbl">Unrealized</div><div class="mid pos">+₹2,000</div><div class="small">330 units held</div></div>
+        <div class="c"><div class="lbl">Realized</div><div class="mid neg">−₹12,000</div><div class="small">1 sell</div></div>
+        <div class="c"><div class="lbl">Dividends</div><div class="mid">₹0</div></div>
+        <div class="c"><div class="lbl">Charges</div><div class="mid neg">−₹186</div></div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="hdr"><div class="legend"><span><span class="dot" style="background:var(--g)"></span>Buy</span><span><span class="dot" style="background:var(--r)"></span>Sell</span></div><div class="pills"><span class="pill">1Y</span><span class="pill on">All</span></div></div>
+      <svg viewBox="0 0 1100 200" width="100%" height="200">
+        <path d="M0,90 L100,80 L180,100 L260,130 L340,150 L420,140 L500,120 L600,110 L700,95 L800,80 L900,70 L1000,60 L1100,55" fill="none" stroke="#a5a5a5" stroke-width="1.6"/>
+        <circle cx="100" cy="80" r="7" fill="#00b386"/><text x="84" y="64" fill="#00b386" font-size="11">Buy ₹1,00,000</text>
+        <circle cx="340" cy="150" r="7" fill="#eb5b3c"/><text x="316" y="176" fill="#eb5b3c" font-size="11">Sell ₹88,000</text>
+        <circle cx="600" cy="110" r="7" fill="#00b386"/><text x="580" y="94" fill="#00b386" font-size="11">Buy ₹88,000</text>
+      </svg>
+    </div>
+
+    <div class="c">
+      <div class="hdr"><span class="mid">Transactions</span><span class="small">Source: Groww reports</span></div>
+      <table>
+        <tr><th>Date</th><th>Type</th><th>Qty</th><th>Price</th><th>Amount</th><th>Charges</th><th>Realized</th></tr>
+        <tr><td>12 Feb 2024</td><td class="pos">Buy</td><td>400</td><td>₹250.00</td><td>₹1,00,000</td><td>₹62</td><td>—</td></tr>
+        <tr><td>03 Jun 2024</td><td class="neg">Sell</td><td>400</td><td>₹220.00</td><td>₹88,000</td><td>₹92</td><td class="neg">−₹12,000</td></tr>
+        <tr><td>18 Jan 2025</td><td class="pos">Buy</td><td>330</td><td>₹266.67</td><td>₹88,000</td><td>₹32</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body></html>
