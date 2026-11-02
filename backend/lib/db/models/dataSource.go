@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"coderchirag/folio-tracker/lib/lookup"
+	"time"
+)
 
 type DataSourceID uint16
 
@@ -20,6 +23,8 @@ const (
 )
 
 const DataSourceTable = "data_sources"
+
+var _ lookup.Entry[DataSourceID, DataSourceCode] = DataSource{}
 
 type DataSource struct {
 	ID        DataSourceID   `db:"id"          json:"-"`

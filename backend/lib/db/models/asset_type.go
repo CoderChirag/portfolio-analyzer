@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"coderchirag/folio-tracker/lib/lookup"
+	"time"
+)
 
 type AssetTypeID uint16
 
@@ -22,6 +25,8 @@ const (
 )
 
 const AssetTypeTable = "asset_types"
+
+var _ lookup.Entry[AssetTypeID, AssetTypeCode] = AssetType{}
 
 type AssetType struct {
 	ID        AssetTypeID   `db:"id"          json:"-"`

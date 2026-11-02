@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"coderchirag/folio-tracker/lib/lookup"
+	"time"
+)
 
 type TransactionTypeID uint16
 
@@ -21,6 +24,8 @@ const (
 )
 
 const TransactionTypeTable = "transaction_types"
+
+var _ lookup.Entry[TransactionTypeID, TransactionTypeCode] = TransactionType{}
 
 type TransactionType struct {
 	ID        TransactionTypeID   `db:"id"          json:"-"`
