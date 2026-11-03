@@ -29,6 +29,8 @@ var (
 	ErrUserEmailInvalid  = errors.New("email is not a valid address")
 	ErrUserPANRequired   = errors.New("PAN is required")
 	ErrUserPANInvalid    = errors.New("PAN must look like ABCDE1234F")
+	ErrUserEmailTaken    = errors.New("email is already registered")
+	ErrUserPANTaken      = errors.New("PAN is already registered")
 )
 
 type User struct {
@@ -38,6 +40,7 @@ type User struct {
 	PAN       *string   `db:"pan"         json:"pan"`
 	CreatedAt time.Time `db:"created_at"  json:"createdAt"`
 	UpdatedAt time.Time `db:"updated_at"  json:"updatedAt"`
+	Version   uint32    `db:"version"     json:"version"`
 }
 
 var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")

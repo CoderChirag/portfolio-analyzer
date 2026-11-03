@@ -11,4 +11,7 @@ require (
 	golang.org/x/text v0.43.0
 )
 
-require filippo.io/edwards25519 v1.2.0 // indirect
+require (
+	filippo.io/edwards25519 v1.2.0 // indirect
+	github.com/go-chi/chi/v5 v5.5.0 // indirect
+)
