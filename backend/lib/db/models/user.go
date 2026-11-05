@@ -51,7 +51,7 @@ func NewUser(name, email, pan string) (*User, error) {
 	user := &User{
 		ID:    id.New(),
 		Name:  strings.TrimSpace(name),
-		Email: strings.ToLower(strings.TrimSpace(email)),
+		Email: NormalizeEmail(email),
 		PAN:   utils.OptionalUpper(pan),
 	}
 	if err := user.Validate(); err != nil {
@@ -83,9 +83,17 @@ func (u *User) Validate() error {
 		errs.Add("email", ErrUserEmailInvalid)
 	}
 
+	if u.PAN == nil {
+		errs.Add("pan", ErrUserPANRequired)
+	}
+
 	if u.PAN != nil && !panPattern.MatchString(*u.PAN) {
 		errs.Add("pan", ErrUserPANInvalid)
 	}
 
 	return errs.Err()
+}
+
+func NormalizeEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }

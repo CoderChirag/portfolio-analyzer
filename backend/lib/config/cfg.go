@@ -16,6 +16,7 @@ type Config struct {
 	DbName          string
 	DbPoolSize      int
 	MigrationsDir   string
+	Port            int
 }
 
 func Load() (*Config, error) {
@@ -23,7 +24,7 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	port := env.GetenvDefault("DB_PORT", "3306")
+	dbPort := env.GetenvDefault("DB_PORT", "3306")
 	rootUser, err := env.Getenv("DB_ROOT_USER")
 	if err != nil {
 		return nil, err
@@ -54,9 +55,14 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid poolsize: %w", err)
 	}
 
+	port, err := strconv.Atoi(env.GetenvDefault("PORT", "8080"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid port: %w", err)
+	}
+
 	config := &Config{
 		DbHost:          host,
-		DbPort:          port,
+		DbPort:          dbPort,
 		DbRootUser:      rootUser,
 		DbRootPassword:  rootPass,
 		DbFolioUser:     folioUser,
@@ -64,6 +70,7 @@ func Load() (*Config, error) {
 		DbName:          dbName,
 		DbPoolSize:      poolSize,
 		MigrationsDir:   migrationsDir,
+		Port:            port,
 	}
 	return config, nil
 }

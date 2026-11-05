@@ -67,9 +67,9 @@ func (r *UserRepo) GetByID(ctx context.Context, userID id.ID) (*models.User, err
 func (r *UserRepo) GetByEmail(ctx context.Context, userEmail string) (*models.User, error) {
 	var u models.User
 	err := r.db.GetContext(ctx, &u,
-		`SELECT `+userColumns+`FROM `+models.UserTable+`
+		`SELECT `+userColumns+` FROM `+models.UserTable+`
 			WHERE email = ?`,
-		userEmail,
+		models.NormalizeEmail(userEmail),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("get user by email: %w", mapError(err))
@@ -101,7 +101,9 @@ func (r *UserRepo) Update(ctx context.Context, u *models.User) error {
 		// Either the row is gone or its version moved on; tell the two apart.
 		var exists bool
 		if err := r.db.GetContext(ctx, &exists,
-			`SELECT 1 FROM `+models.UserTable+` WHERE id = ?`,
+			`SELECT EXISTS(
+				SELECT 1 FROM `+models.UserTable+` WHERE id = ?
+			)`,
 			u.ID,
 		); err != nil {
 			return fmt.Errorf("update user: %w", mapError(err))
