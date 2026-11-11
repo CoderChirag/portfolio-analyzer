@@ -37,6 +37,7 @@ var (
 	ErrTxnAmountInvalid      = errors.New("amount must be positive with at most 16 integer and 4 decimal digits")
 	ErrTxnPriceInvalid       = errors.New("price must be positive with at most 14 integer and 6 decimal digits")
 	ErrTxnCurrencyInvalid    = errors.New("currency must be a 3-letter ISO 4217 code")
+	ErrTxnImportInvalid      = errors.New("import id is invalid")
 )
 
 // Transaction is one row of the core ledger, common to every asset class.
@@ -46,7 +47,8 @@ type Transaction struct {
 	DataSourceID      DataSourceID      `db:"data_source_id"       json:"-"`
 	InstrumentID      types.ID          `db:"instrument_id"        json:"instrumentId"`
 	TransactionTypeID TransactionTypeID `db:"transaction_type_id"  json:"-"`
-	TradeDate         time.Time         `db:"trade_date"           json:"tradeDate"` // midnight UTC of the Indian calendar date
+	ImportID          *types.ID         `db:"import_id"            json:"importId,omitempty"` // nil for manual entries
+	TradeDate         time.Time         `db:"trade_date"           json:"tradeDate"`          // midnight UTC of the Indian calendar date
 	ExecutedAt        *time.Time        `db:"executed_at"          json:"executedAt,omitempty"`
 	Quantity          decimal.Decimal   `db:"quantity"             json:"quantity"`
 	Amount            decimal.Decimal   `db:"amount"               json:"amount"`
@@ -62,6 +64,7 @@ type TransactionParams struct {
 	DataSourceID    DataSourceID
 	Instrument      *Instrument
 	TransactionType TransactionType // from the lookup registry
+	ImportID        *types.ID       // the upload that produced it; nil for manual entries
 	TradeDate       time.Time       // only the year, month and day are used
 	ExecutedAt      *time.Time      // any time zone; stored as UTC
 	Quantity        decimal.Decimal
@@ -87,6 +90,7 @@ func NewTransaction(p TransactionParams) (*Transaction, error) {
 		DataSourceID:      p.DataSourceID,
 		InstrumentID:      p.Instrument.ID,
 		TransactionTypeID: p.TransactionType.ID,
+		ImportID:          p.ImportID,
 		TradeDate:         utils.DateOnly(p.TradeDate),
 		Quantity:          p.Quantity,
 		Amount:            p.Amount,
@@ -126,6 +130,10 @@ func (t *Transaction) Validate(tt TransactionType) error {
 
 	if t.TransactionTypeID.IsZero() || tt.Code.IsEmpty() || tt.ID != t.TransactionTypeID {
 		errs.Add("transactionType", ErrTxnTypeRequired)
+	}
+
+	if t.ImportID != nil && t.ImportID.IsZero() {
+		errs.Add("import", ErrTxnImportInvalid)
 	}
 
 	switch {
