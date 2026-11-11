@@ -82,7 +82,7 @@ func NewTransaction(p TransactionParams) (*Transaction, error) {
 	}
 
 	t := &Transaction{
-		ID:                types.New(),
+		ID:                types.NewID(),
 		UserID:            p.UserID,
 		DataSourceID:      p.DataSourceID,
 		InstrumentID:      p.Instrument.ID,

@@ -49,7 +49,7 @@ var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")
 // On failure it returns validation.Errors listing every invalid field.
 func NewUser(name, email, pan string) (*User, error) {
 	user := &User{
-		ID:    types.New(),
+		ID:    types.NewID(),
 		Name:  strings.TrimSpace(name),
 		Email: NormalizeEmail(email),
 		PAN:   utils.OptionalUpper(pan),

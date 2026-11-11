@@ -48,7 +48,7 @@ var isinPattern = regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{9}[0-9]$`)
 // On failure it returns validation.Errors listing every invalid field.
 func NewInstrument(p InstrumentParams) (*Instrument, error) {
 	i := &Instrument{
-		ID:          types.New(),
+		ID:          types.NewID(),
 		AssetTypeID: p.AssetType.ID,
 		Name:        strings.TrimSpace(p.Name),
 		ISIN:        utils.OptionalUpper(p.ISIN),

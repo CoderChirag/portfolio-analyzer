@@ -10,11 +10,11 @@ import (
 // ID is a UUIDv7 stored in MySQL as BINARY(16)
 type ID uuid.UUID
 
-func New() ID {
+func NewID() ID {
 	return ID(uuid.Must(uuid.NewV7()))
 }
 
-func Parse(s string) (ID, error) {
+func ParseID(s string) (ID, error) {
 	id, err := uuid.Parse(s)
 	return ID(id), err
 }
@@ -42,7 +42,7 @@ func (id ID) MarshalText() ([]byte, error) {
 }
 
 func (id *ID) UnmarshalText(b []byte) error {
-	parsed, err := Parse(string(b))
+	parsed, err := ParseID(string(b))
 	if err != nil {
 		return err
 	}

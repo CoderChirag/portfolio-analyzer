@@ -41,7 +41,7 @@ type InstrumentAlias struct {
 func NewInstrumentAlias(source DataSource, alias string, instrumentID types.ID) (*InstrumentAlias, error) {
 	canonical := strings.TrimSpace(alias)
 	a := &InstrumentAlias{
-		ID:              types.New(),
+		ID:              types.NewID(),
 		DataSourceID:    source.ID,
 		Alias:           canonical,
 		NormalizedAlias: utils.NormalizeFundName(canonical, maxNormalizedAliasLen),

@@ -64,7 +64,7 @@ func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error)
 	}
 
 	l := &InstrumentListing{
-		ID:           types.New(),
+		ID:           types.NewID(),
 		InstrumentID: p.Instrument.ID,
 		Exchange:     Exchange(strings.ToUpper(strings.TrimSpace(string(p.Exchange)))),
 		Symbol:       strings.ToUpper(strings.TrimSpace(p.Symbol)),
