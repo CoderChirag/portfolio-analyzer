@@ -73,20 +73,20 @@ var (
 
 // Job is one unit of background work. Its business outcome lives elsewhere (e.g. imports).
 type Job struct {
-	ID          types.ID   `db:"id" json:"id"`
-	Type        JobType    `db:"job_type" json:"type"`
-	Payload     types.JSON `db:"payload" json:"payload"`
-	DedupeKey   *string    `db:"dedupe_key" json:"dedupeKey,omitempty"`
-	UserID      *types.ID  `db:"user_id" json:"-"` // nil for system jobs
-	Status      JobStatus  `db:"status" json:"status"`
-	Attempts    uint16     `db:"attempts" json:"attempts"`
-	MaxAttempts uint16     `db:"max_attempts" json:"maxAttempts"`
-	AvailableAt time.Time  `db:"available_at" json:"availableAt"` // queued: run after; running: lease expiry
-	LockedBy    *string    `db:"locked_by" json:"lockedBy,omitempty"`
-	LastError   *string    `db:"last_error" json:"lastError,omitempty"`
-	FinishedAt  *time.Time `db:"finished_at" json:"finishedAt,omitempty"`
-	CreatedAt   time.Time  `db:"created_at" json:"createdAt"`
-	UpdatedAt   time.Time  `db:"updated_at" json:"updatedAt"`
+	ID          types.ID   `db:"id"            json:"id"`
+	Type        JobType    `db:"job_type"      json:"type"`
+	Payload     types.JSON `db:"payload"       json:"payload"`
+	DedupeKey   *string    `db:"dedupe_key"    json:"dedupeKey,omitempty"`
+	UserID      *types.ID  `db:"user_id"       json:"-"` // nil for system jobs
+	Status      JobStatus  `db:"status"        json:"status"`
+	Attempts    uint16     `db:"attempts"      json:"attempts"`
+	MaxAttempts uint16     `db:"max_attempts"  json:"maxAttempts"`
+	AvailableAt time.Time  `db:"available_at"  json:"availableAt"` // queued: run after; running: lease expiry
+	LockedBy    *string    `db:"locked_by"     json:"lockedBy,omitempty"`
+	LastError   *string    `db:"last_error"    json:"lastError,omitempty"`
+	FinishedAt  *time.Time `db:"finished_at"   json:"finishedAt,omitempty"`
+	CreatedAt   time.Time  `db:"created_at"    json:"createdAt"`
+	UpdatedAt   time.Time  `db:"updated_at"    json:"updatedAt"`
 }
 
 type JobParams struct {
