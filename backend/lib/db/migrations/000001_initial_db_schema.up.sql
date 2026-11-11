@@ -96,6 +96,112 @@ CREATE TABLE IF NOT EXISTS `instrument_aliases` (
   CONSTRAINT `fk_aliases_instrument` FOREIGN KEY (`instrument_id`) REFERENCES `instruments` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Imports: What user sees
+CREATE TABLE IF NOT EXISTS `imports` (
+  `id` BINARY(16) NOT NULL,
+  `user_id` BINARY(16) NOT NULL,
+  `data_source_id` SMALLINT UNSIGNED NOT NULL,
+  -- Which parser handles the file, e.g. 'groww_stock_orders'.
+  `kind` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `file_name` VARCHAR(255) NOT NULL,
+  `file_size` INT UNSIGNED NOT NULL,
+  `file_sha256` BINARY(32) NOT NULL,
+  -- queued / processing / succeeded / completed_with_errors / failed
+  `status` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  -- NULL until the file has been parsed and its rows counted.
+  `rows_total` INT UNSIGNED NULL,
+  `rows_processed` INT UNSIGNED NOT NULL DEFAULT 0,
+  `rows_imported` INT UNSIGNED NOT NULL DEFAULT 0,
+  `rows_duplicate` INT UNSIGNED NOT NULL DEFAULT 0,
+  `rows_failed` INT UNSIGNED NOT NULL DEFAULT 0,
+  -- File-level failure only (unreadable file, retries exhausted). Row problems go to import_row_errors.
+  `error_code` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  `error_msg` VARCHAR(1024) NULL,
+  `started_at` DATETIME(3) NULL,
+  `finished_at` DATETIME(3) NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY(`id`),
+  UNIQUE KEY `uq_imports_user_file` (`user_id`, `file_sha256`),
+  KEY `idx_imports_user_status` (`user_id`, `status`),
+  KEY `idx_imports_user` (`user_id`),
+  KEY `idx_imports_source` (`data_source_id`),
+  CONSTRAINT `fk_imports_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_imports_source` FOREIGN KEY (`data_source_id`) REFERENCES `data_sources` (`id`),
+  CONSTRAINT `chk_imports_kind` CHECK(`kind` IN ('groww_stock_orders')),
+  CONSTRAINT `chk_imports_status` CHECK(`status` IN 
+    ('queued', 'processing', 'succeeded', 'completed_with_errors', 'failed')),
+  CONSTRAINT `chk_imports_processed` CHECK(`rows_total` IS NULL OR `rows_processed` <= `rows_total`),
+  CONSTRAINT `chk_imports_finished` CHECK(`finished_at` IS NULL OR `started_at` IS NULL OR `finished_at` >= `started_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Uploaded Bytes
+CREATE TABLE IF NOT EXISTS `import_files` (
+  `import_id` BINARY(16) NOT NULL,
+  -- Normalized media type ("type/subtype", lowercase, no parameters), detected by the server.
+  `content_type` VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  -- Up to 16 MB; the upload handler enforces a lower limit.
+  `content` MEDIUMBLOB NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`import_id`),
+  CONSTRAINT `fk_import_files_import` FOREIGN KEY (`import_id`) REFERENCES `imports` (`id`) ON DELETE CASCADE,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Generic Work Queue
+CREATE TABLE IF NOT EXISTS `jobs` (
+  `id` BINARY(16) NOT NULL,
+  -- e.g. 'import.process'; a registry in code maps each type to its handler.
+  `job_type` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  -- Handler input, e.g. {"import_id": "0195..."}.
+  `payload` JSON NOT NULL,
+  -- Makes enqueueing idempotent, e.g. 'import.process:<import_id>'. NULL = no dedup.
+  `dedupe_key` VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  -- NULL for system jobs (price refresh, cleanup).
+  `user_id` BINARY(16) NULL,
+  -- queued / running / succeeded / failed / cancelled
+  `status` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `attempts` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `max_attempts` SMALLINT UNSIGNED NOT NULL DEFAULT 5,
+  -- queued: run no earlier than this. running: lease expiry; past it, another worker may take over.
+  `available_at` DATETIME(3) NOT NULL,
+  -- Worker identity (hostname:pid:goroutine) for debugging stuck jobs.
+  `locked_by` VARCHAR(128) NULL,
+  `last_error` VARCHAR(2048) NULL,
+  `finished_at` DATETIME(3) NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_jobs_dedupe_key` (`dedupe_key`),
+  -- Keep the claim index small: a cleanup job deletes succeeded and cancelled jobs after about 7 days,
+  -- and failed ones after about 30. The table then stays proportional to recent work, 
+  -- not all-time work, which keeps claims fast regardless of history.
+  KEY `idx_jobs_claim` (`status`, `available_at`),
+  KEY `idx_jobs_user` (`user_id`),
+  CONSTRAINT `fk_jobs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `chk_jobs_status` CHECK(`status` IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),
+  CONSTRAINT `chk_jobs_attempts` CHECK(`attempts` <= `max_attempts`),
+  CONSTRAINT`chk_jobs_payload` CHECK(JSON_TYPE(`payload`) = 'OBJECT')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Why particular rows are skipped
+CREATE TABLE IF NOT EXISTS `import_row_errors` (
+  `id` BINARY(16) NOT NULL,
+  `import_id` BINARY(16) NOT NULL,
+  -- 1-based line number in the file, as a spreadsheet shows it (header = 1).
+  `line_number` INT UNSIGNED NOT NULL,
+  -- Column the problem is in, e.g. 'ISIN'; NULL if it concerns the whole row.
+  `field` VARCHAR(64) NULL,
+  -- Stable machine code for the UI, e.g. 'UNKNOWN_ISIN', 'INVALID_QUANTITY'.
+  `code` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `message` VARCHAR(1024) NOT NULL,
+  -- The original row (header → value), so the user sees exactly what was rejected.
+  `raw_row` JSON NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY(`id`),
+  KEY `idx_import_row_errors_import_row` (`import_id`, `line_number`),
+  CONSTRAINT `fk_import_row_errors_import` FOREIGN KEY (`import_id`) REFERENCES `imports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- Reference Table for keeping record of all transaction types.
 -- direction: +1 adds units to a holding, -1 removes them.
 CREATE TABLE IF NOT EXISTS `transaction_types` (
@@ -117,6 +223,7 @@ CREATE TABLE IF NOT EXISTS `transactions` (
   `data_source_id` SMALLINT UNSIGNED NOT NULL,
   `instrument_id` BINARY(16) NOT NULL,
   `transaction_type_id` SMALLINT UNSIGNED NOT NULL,
+  `import_id` BINARY(16) NULL,   -- NULL for manual entries
   -- Indian calendar date of the trade; drives FIFO order and FY boundaries.
   `trade_date` DATE NOT NULL,
   -- UTC instant, when the source reports a time.
@@ -137,10 +244,12 @@ CREATE TABLE IF NOT EXISTS `transactions` (
   KEY `idx_txn_source` (`data_source_id`),
   KEY `idx_txn_instrument` (`instrument_id`),
   KEY `idx_txn_type` (`transaction_type_id`),
+  KEY `idx_txn_import` (`import_id`),
   CONSTRAINT `fk_txn_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_txn_source` FOREIGN KEY (`data_source_id`) REFERENCES `data_sources` (`id`),
   CONSTRAINT `fk_txn_instrument` FOREIGN KEY (`instrument_id`) REFERENCES `instruments` (`id`),
   CONSTRAINT `fk_txn_type` FOREIGN KEY (`transaction_type_id`) REFERENCES `transaction_types` (`id`),
+  CONSTRAINT `fk_txn_import` FOREIGN KEY (`import_id`) REFERENCES `imports` (`id`),
   CONSTRAINT `chk_txn_quantity` CHECK (`quantity` > 0),
   CONSTRAINT `chk_txn_amount` CHECK (`amount` > 0),
   CONSTRAINT `chk_txn_price` CHECK (`price` IS NULL OR `price` > 0),

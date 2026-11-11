@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
@@ -27,7 +27,7 @@ var (
 )
 
 type Instrument struct {
-	ID          id.ID       `db:"id"             json:"id"`
+	ID          types.ID    `db:"id"             json:"id"`
 	AssetTypeID AssetTypeID `db:"asset_type_id"  json:"-"`
 	Name        string      `db:"name"           json:"name"`
 	ISIN        *string     `db:"isin"           json:"isin,omitempty"`
@@ -48,7 +48,7 @@ var isinPattern = regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{9}[0-9]$`)
 // On failure it returns validation.Errors listing every invalid field.
 func NewInstrument(p InstrumentParams) (*Instrument, error) {
 	i := &Instrument{
-		ID:          id.New(),
+		ID:          types.New(),
 		AssetTypeID: p.AssetType.ID,
 		Name:        strings.TrimSpace(p.Name),
 		ISIN:        utils.OptionalUpper(p.ISIN),

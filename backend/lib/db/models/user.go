@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
@@ -34,7 +34,7 @@ var (
 )
 
 type User struct {
-	ID        id.ID     `db:"id"          json:"id"`
+	ID        types.ID  `db:"id"          json:"id"`
 	Name      string    `db:"name"        json:"name"`
 	Email     string    `db:"email"       json:"email"`
 	PAN       *string   `db:"pan"         json:"pan"`
@@ -49,7 +49,7 @@ var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")
 // On failure it returns validation.Errors listing every invalid field.
 func NewUser(name, email, pan string) (*User, error) {
 	user := &User{
-		ID:    id.New(),
+		ID:    types.New(),
 		Name:  strings.TrimSpace(name),
 		Email: NormalizeEmail(email),
 		PAN:   utils.OptionalUpper(pan),

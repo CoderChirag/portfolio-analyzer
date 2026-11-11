@@ -1,6 +1,10 @@
 DROP TABLE IF EXISTS `stock_trade_details`;
 DROP TABLE IF EXISTS `transactions`;
 DROP TABLE IF EXISTS `transaction_types`;
+DROP TABLE IF EXISTS `import_row_errors`;
+DROP TABLE IF EXISTS `jobs`;
+DROP TABLE IF EXISTS `import_files`;
+DROP TABLE IF EXISTS `imports`;
 DROP TABLE IF EXISTS `instrument_aliases`;
 DROP TABLE IF EXISTS `mutual_fund_details`;
 DROP TABLE IF EXISTS `instrument_listings`;

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"regexp"
@@ -37,8 +37,8 @@ var (
 // InstrumentListing is one exchange listing of an exchange-traded instrument.
 // BSE listings carry the numeric scrip code as the symbol.
 type InstrumentListing struct {
-	ID           id.ID     `db:"id"             json:"id"`
-	InstrumentID id.ID     `db:"instrument_id"  json:"instrumentId"`
+	ID           types.ID  `db:"id"             json:"id"`
+	InstrumentID types.ID  `db:"instrument_id"  json:"instrumentId"`
 	Exchange     Exchange  `db:"exchange"       json:"exchange"`
 	Symbol       string    `db:"symbol"         json:"symbol"`
 	CreatedAt    time.Time `db:"created_at"     json:"createdAt"`
@@ -64,7 +64,7 @@ func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error)
 	}
 
 	l := &InstrumentListing{
-		ID:           id.New(),
+		ID:           types.New(),
 		InstrumentID: p.Instrument.ID,
 		Exchange:     Exchange(strings.ToUpper(strings.TrimSpace(string(p.Exchange)))),
 		Symbol:       strings.ToUpper(strings.TrimSpace(p.Symbol)),

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"coderchirag/folio-tracker/lib/db/models"
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"context"
 	"fmt"
 )
@@ -51,7 +51,7 @@ func (r *UserRepo) Create(ctx context.Context, u *models.User) error {
 	return nil
 }
 
-func (r *UserRepo) GetByID(ctx context.Context, userID id.ID) (*models.User, error) {
+func (r *UserRepo) GetByID(ctx context.Context, userID types.ID) (*models.User, error) {
 	var u models.User
 	err := r.db.GetContext(ctx, &u,
 		`SELECT `+userColumns+` FROM `+models.UserTable+`

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"regexp"
@@ -27,7 +27,7 @@ var (
 // (Exchange, TradeDate, ExchangeOrderID) identifies the order: exchanges
 // restart order numbering every trading day.
 type StockTradeDetails struct {
-	TransactionID   id.ID     `db:"transaction_id"     json:"transactionId"`
+	TransactionID   types.ID  `db:"transaction_id"     json:"transactionId"`
 	TradeDate       time.Time `db:"trade_date"         json:"-"` // copy of Transaction.TradeDate
 	Exchange        Exchange  `db:"exchange"           json:"exchange"`
 	ExchangeOrderID string    `db:"exchange_order_id"  json:"exchangeOrderId"`

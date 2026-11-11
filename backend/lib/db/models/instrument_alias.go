@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
@@ -29,19 +29,19 @@ var (
 )
 
 type InstrumentAlias struct {
-	ID              id.ID        `db:"id"                json:"id"`
+	ID              types.ID     `db:"id"                json:"id"`
 	DataSourceID    DataSourceID `db:"data_source_id"    json:"-"`
 	Alias           string       `db:"alias"             json:"alias"`
 	NormalizedAlias string       `db:"normalized_alias"  json:"-"`
-	InstrumentID    id.ID        `db:"instrument_id"     json:"instrumentId"`
+	InstrumentID    types.ID     `db:"instrument_id"     json:"instrumentId"`
 	CreatedAt       time.Time    `db:"created_at"        json:"createdAt"`
 	UpdatedAt       time.Time    `db:"updated_at"        json:"updatedAt"`
 }
 
-func NewInstrumentAlias(source DataSource, alias string, instrumentID id.ID) (*InstrumentAlias, error) {
+func NewInstrumentAlias(source DataSource, alias string, instrumentID types.ID) (*InstrumentAlias, error) {
 	canonical := strings.TrimSpace(alias)
 	a := &InstrumentAlias{
-		ID:              id.New(),
+		ID:              types.New(),
 		DataSourceID:    source.ID,
 		Alias:           canonical,
 		NormalizedAlias: utils.NormalizeFundName(canonical, maxNormalizedAliasLen),

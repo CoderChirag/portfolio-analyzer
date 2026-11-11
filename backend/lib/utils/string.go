@@ -72,3 +72,15 @@ func OptionalTrim(s string) *string {
 	}
 	return &s
 }
+
+// TruncateRunes caps s at n characters without splitting a multi-byte character.
+func TruncateRunes(s string, n int) string {
+	count := 0
+	for i := range s {
+		if count == n {
+			return s[:i]
+		}
+		count++
+	}
+	return s
+}

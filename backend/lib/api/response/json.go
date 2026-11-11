@@ -9,7 +9,7 @@ import (
 )
 
 func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any, maxbytes int64) error {
-	var e http.MaxBytesError
+	var e *http.MaxBytesError
 	r.Body = http.MaxBytesReader(w, r.Body, maxbytes)
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()

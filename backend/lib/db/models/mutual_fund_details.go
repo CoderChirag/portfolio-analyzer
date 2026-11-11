@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
@@ -27,7 +27,7 @@ var (
 // AMC is optional because sources reveal it unevenly
 // (Groww orders CSV has none; the holdings CSV has it).
 type MutualFundDetails struct {
-	InstrumentID id.ID     `db:"instrument_id"  json:"instrumentId"`
+	InstrumentID types.ID  `db:"instrument_id"  json:"instrumentId"`
 	AMC          *string   `db:"amc"            json:"amc,omitempty"`
 	CreatedAt    time.Time `db:"created_at"     json:"createdAt"`
 	UpdatedAt    time.Time `db:"updated_at"     json:"updatedAt"`

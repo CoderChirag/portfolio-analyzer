@@ -1,7 +1,7 @@
 package models
 
 import (
-	"coderchirag/folio-tracker/lib/id"
+	"coderchirag/folio-tracker/lib/db/models/types"
 	"coderchirag/folio-tracker/lib/utils"
 	"coderchirag/folio-tracker/lib/validation"
 	"errors"
@@ -41,10 +41,10 @@ var (
 
 // Transaction is one row of the core ledger, common to every asset class.
 type Transaction struct {
-	ID                id.ID             `db:"id"                   json:"id"`
-	UserID            id.ID             `db:"user_id"              json:"userId"`
+	ID                types.ID          `db:"id"                   json:"id"`
+	UserID            types.ID          `db:"user_id"              json:"userId"`
 	DataSourceID      DataSourceID      `db:"data_source_id"       json:"-"`
-	InstrumentID      id.ID             `db:"instrument_id"        json:"instrumentId"`
+	InstrumentID      types.ID          `db:"instrument_id"        json:"instrumentId"`
 	TransactionTypeID TransactionTypeID `db:"transaction_type_id"  json:"-"`
 	TradeDate         time.Time         `db:"trade_date"           json:"tradeDate"` // midnight UTC of the Indian calendar date
 	ExecutedAt        *time.Time        `db:"executed_at"          json:"executedAt,omitempty"`
@@ -58,7 +58,7 @@ type Transaction struct {
 
 // TransactionParams uses named fields so same-typed values can't be swapped by position.
 type TransactionParams struct {
-	UserID          id.ID
+	UserID          types.ID
 	DataSourceID    DataSourceID
 	Instrument      *Instrument
 	TransactionType TransactionType // from the lookup registry
@@ -82,7 +82,7 @@ func NewTransaction(p TransactionParams) (*Transaction, error) {
 	}
 
 	t := &Transaction{
-		ID:                id.New(),
+		ID:                types.New(),
 		UserID:            p.UserID,
 		DataSourceID:      p.DataSourceID,
 		InstrumentID:      p.Instrument.ID,
