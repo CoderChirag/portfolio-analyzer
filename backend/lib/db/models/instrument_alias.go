@@ -38,14 +38,20 @@ type InstrumentAlias struct {
 	UpdatedAt       time.Time    `db:"updated_at"        json:"updatedAt"`
 }
 
-func NewInstrumentAlias(source DataSource, alias string, instrumentID types.ID) (*InstrumentAlias, error) {
-	canonical := strings.TrimSpace(alias)
+type InstrumentAliasParams struct {
+	Source       DataSource
+	Alias        string
+	InstrumentID types.ID
+}
+
+func NewInstrumentAlias(p InstrumentAliasParams) (*InstrumentAlias, error) {
+	canonical := strings.TrimSpace(p.Alias)
 	a := &InstrumentAlias{
 		ID:              types.NewID(),
-		DataSourceID:    source.ID,
+		DataSourceID:    p.Source.ID,
 		Alias:           canonical,
 		NormalizedAlias: utils.NormalizeFundName(canonical, maxNormalizedAliasLen),
-		InstrumentID:    instrumentID,
+		InstrumentID:    p.InstrumentID,
 	}
 	if err := a.Validate(); err != nil {
 		return nil, err

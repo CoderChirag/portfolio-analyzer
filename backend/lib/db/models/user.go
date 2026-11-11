@@ -43,16 +43,22 @@ type User struct {
 	Version   uint32    `db:"version"     json:"version"`
 }
 
+type UserParams struct {
+	Name  string
+	Email string
+	PAN   string
+}
+
 var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")
 
 // NewUser normalizes and validates input and assigns a fresh ID.
 // On failure it returns validation.Errors listing every invalid field.
-func NewUser(name, email, pan string) (*User, error) {
+func NewUser(p UserParams) (*User, error) {
 	user := &User{
 		ID:    types.NewID(),
-		Name:  strings.TrimSpace(name),
-		Email: NormalizeEmail(email),
-		PAN:   utils.OptionalUpper(pan),
+		Name:  strings.TrimSpace(p.Name),
+		Email: NormalizeEmail(p.Email),
+		PAN:   utils.OptionalUpper(p.PAN),
 	}
 	if err := user.Validate(); err != nil {
 		return nil, err

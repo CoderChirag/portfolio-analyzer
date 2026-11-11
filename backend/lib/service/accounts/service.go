@@ -17,7 +17,11 @@ func NewService(users UserStore) *Service {
 }
 
 func (s *Service) SignUp(ctx context.Context, in SignUpInput) (*models.User, error) {
-	u, err := models.NewUser(in.Name, in.Email, in.PAN)
+	u, err := models.NewUser(models.UserParams{
+		Name:  in.Name,
+		Email: in.Email,
+		PAN:   in.PAN,
+	})
 	if err != nil {
 		return nil, err
 	}
