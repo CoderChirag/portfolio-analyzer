@@ -8,8 +8,10 @@ import (
 )
 
 var (
-	ErrBadRequest     = errors.New("malformed request body")
-	ErrEntityTooLarge = errors.New("entity too large")
+	ErrBadRequest       = errors.New("malformed request body")
+	ErrEntityTooLarge   = errors.New("entity too large")
+	ErrNotFound         = errors.New("not found")
+	ErrMethodNotAllowed = errors.New("method not allowed")
 )
 
 type fieldError struct {
@@ -17,40 +19,50 @@ type fieldError struct {
 	Msg   string `json:"msg"`
 }
 
-type errorBody struct {
+type ErrorBody struct {
 	Success bool         `json:"success"`
 	Code    string       `json:"code"`
 	Msg     string       `json:"msg"`
 	Fields  []fieldError `json:"fields,omitempty"`
 }
 
-func classify(err error) (int, *errorBody) {
+func Classify(err error) (int, *ErrorBody) {
 	var verrs validation.Errors
 	var dup *repository.DuplicateError
 	switch {
 	case errors.Is(err, ErrBadRequest):
-		return http.StatusBadRequest, &errorBody{
+		return http.StatusBadRequest, &ErrorBody{
 			Code: "BAD_REQUEST",
 			Msg:  err.Error(),
 		}
 	case errors.Is(err, repository.ErrNotFound):
-		return http.StatusNotFound, &errorBody{
+		return http.StatusNotFound, &ErrorBody{
 			Code: "NOT_FOUND",
 			Msg:  repository.ErrNotFound.Error(),
 		}
+	case errors.Is(err, ErrNotFound):
+		return http.StatusNotFound, &ErrorBody{
+			Code: "NOT_FOUND",
+			Msg:  ErrNotFound.Error(),
+		}
+	case errors.Is(err, ErrMethodNotAllowed):
+		return http.StatusMethodNotAllowed, &ErrorBody{
+			Code: "METHOD_NOT_ALLOWED",
+			Msg:  ErrMethodNotAllowed.Error(),
+		}
 	case errors.As(err, &dup):
-		b := &errorBody{Code: "DUPLICATE", Msg: "already exists"}
+		b := &ErrorBody{Code: "DUPLICATE", Msg: "already exists"}
 		if dup.Reason != nil {
 			b.Fields = []fieldError{{Field: dup.Field, Msg: dup.Reason.Error()}}
 		}
 		return http.StatusConflict, b
 	case errors.Is(err, repository.ErrConflict):
-		return http.StatusConflict, &errorBody{
+		return http.StatusConflict, &ErrorBody{
 			Code: "CONFLICT",
 			Msg:  repository.ErrConflict.Error(),
 		}
 	case errors.Is(err, ErrEntityTooLarge):
-		return http.StatusRequestEntityTooLarge, &errorBody{
+		return http.StatusRequestEntityTooLarge, &ErrorBody{
 			Code: "ENTITY_TOO_LARGE",
 			Msg:  ErrEntityTooLarge.Error(),
 		}
@@ -59,13 +71,13 @@ func classify(err error) (int, *errorBody) {
 		for _, ve := range verrs {
 			fields = append(fields, fieldError{Field: ve.Field, Msg: ve.Err.Error()})
 		}
-		return http.StatusUnprocessableEntity, &errorBody{
+		return http.StatusUnprocessableEntity, &ErrorBody{
 			Code:   "VALIDATION_FAILED",
 			Msg:    "validation failed",
 			Fields: fields,
 		}
 	default:
-		return http.StatusInternalServerError, &errorBody{
+		return http.StatusInternalServerError, &ErrorBody{
 			Code: "INTERNAL",
 			Msg:  "internal server error",
 		}

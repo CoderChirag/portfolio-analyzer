@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any, maxbytes int64) error {
@@ -30,11 +32,18 @@ func JSON(w http.ResponseWriter, status int, data any) {
 	_ = json.NewEncoder(w).Encode(map[string]any{"success": true, "data": data})
 }
 
-func JSONError(w http.ResponseWriter, r *http.Request, err error) {
-	status, body := classify(err)
+func JSONError(w http.ResponseWriter, r *http.Request, err error, classifyFunc func(error) (int, *ErrorBody)) {
+	var status int
+	var body *ErrorBody
+	if classifyFunc != nil {
+		status, body = classifyFunc(err)
+	} else {
+		status, body = Classify(err)
+	}
 	if status >= 500 {
-		slog.ErrorContext(r.Context(), "request failed", "method", r.Method,
-			"path", r.URL.Path, "err", err)
+		slog.ErrorContext(r.Context(), "request failed",
+			"request_id", middleware.GetReqID(r.Context()),
+			"method", r.Method, "path", r.URL.Path, "err", err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

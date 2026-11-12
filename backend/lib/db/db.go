@@ -43,3 +43,30 @@ func VerifyUTC(ctx context.Context, db *sqlx.DB) (TimezoneInfo, error) {
 	}
 	return tz, nil
 }
+
+// WithTx runs fn in a transaction: commit if fn returns nil, otherwise roll back.
+// A panic also rolls back, then continues.
+func WithTx(ctx context.Context, db *sqlx.DB, fn func(tx *sqlx.Tx) error) (err error) {
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	if err = fn(tx); err != nil {
+		return err
+	}
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+	return nil
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"coderchirag/folio-tracker/lib/api/handlers"
+	"coderchirag/folio-tracker/lib/api/response"
 	"coderchirag/folio-tracker/lib/config"
 	"coderchirag/folio-tracker/lib/db"
 	"coderchirag/folio-tracker/lib/db/repository"
@@ -26,7 +27,10 @@ import (
 )
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     slog.LevelDebug,
+		AddSource: true,
+	})))
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
@@ -48,7 +52,7 @@ func main() {
 	if err != nil {
 		fatal("registry load", err)
 	}
-	users := repository.NewUserRepo(sqlDB, repository.SystemClock)
+	users := repository.NewUserRepo(sqlDB, db.SystemClock)
 	accountsHandler := handlers.NewAccountsHandler(accounts.NewService(users))
 
 	r := chi.NewRouter()
@@ -57,7 +61,16 @@ func main() {
 		middleware.Logger,
 		middleware.Recoverer,
 	)
+
 	r.Post("/signup", accountsHandler.SignUp)
+	r.Get("/users/{id}", accountsHandler.GetUserByID)
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		response.JSONError(w, r, response.ErrNotFound, nil)
+	})
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		response.JSONError(w, r, response.ErrMethodNotAllowed, nil)
+	})
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),

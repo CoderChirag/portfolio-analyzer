@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"coderchirag/folio-tracker/lib/db"
 	"coderchirag/folio-tracker/lib/db/models"
 	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/db/query_builder"
 	"context"
 	"fmt"
 )
@@ -15,11 +17,11 @@ var userUniqueKeys = map[string]uniqueKeyField{
 }
 
 type UserRepo struct {
-	db  DBTX
-	now Clock
+	db  db.DBTX
+	now db.Clock
 }
 
-func NewUserRepo(db DBTX, now Clock) *UserRepo {
+func NewUserRepo(db db.DBTX, now db.Clock) *UserRepo {
 	return &UserRepo{
 		db:  db,
 		now: now,
@@ -27,7 +29,7 @@ func NewUserRepo(db DBTX, now Clock) *UserRepo {
 }
 
 // WithTx returns a copy of the repo that runs its queries in tx.
-func (r *UserRepo) WithTx(tx DBTX) *UserRepo {
+func (r *UserRepo) WithTx(tx db.DBTX) *UserRepo {
 	return &UserRepo{
 		db:  tx,
 		now: r.now,
@@ -45,22 +47,28 @@ func (r *UserRepo) Create(ctx context.Context, u *models.User) error {
 		u.ID, u.Name, u.Email, u.PAN, now, now,
 	)
 	if err != nil {
-		return fmt.Errorf("create user: %w", mapWriteError(err, userUniqueKeys))
+		return fmt.Errorf("UserRepo.Create: %w", mapWriteError(err, userUniqueKeys))
 	}
 	u.Version, u.CreatedAt, u.UpdatedAt = 1, now, now
 	return nil
 }
 
 func (r *UserRepo) GetByID(ctx context.Context, userID types.ID) (*models.User, error) {
-	var u models.User
-	err := r.db.GetContext(ctx, &u,
-		`SELECT `+userColumns+` FROM `+models.UserTable+`
-		 WHERE id = ?`,
-		userID,
-	)
+	qb, err := query_builder.New[models.User](r.db, models.UserTable, query_builder.SelectQuery)
 	if err != nil {
-		return nil, fmt.Errorf("get user by id: %w", mapError(err))
+		return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
 	}
+
+	var u models.User
+	_, err = qb.SelectAll().Where(qb.Cond(
+		qb.Col(&qb.Model.ID),
+		query_builder.EqualOp,
+		userID,
+	)).ExecContext(ctx, &u)
+	if err != nil {
+		return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
+	}
+
 	return &u, nil
 }
 
@@ -72,7 +80,7 @@ func (r *UserRepo) GetByEmail(ctx context.Context, userEmail string) (*models.Us
 		models.NormalizeEmail(userEmail),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("get user by email: %w", mapError(err))
+		return nil, fmt.Errorf("UserRepo.GetByEmail: %w", mapError(err))
 	}
 	return &u, nil
 }
@@ -91,11 +99,11 @@ func (r *UserRepo) Update(ctx context.Context, u *models.User) error {
 		u.Name, u.Email, u.PAN, now, u.ID, u.Version,
 	)
 	if err != nil {
-		return fmt.Errorf("update user: %w", mapWriteError(err, userUniqueKeys))
+		return fmt.Errorf("UserRepo.Update: %w", mapWriteError(err, userUniqueKeys))
 	}
 	n, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("update user: %w", mapError(err))
+		return fmt.Errorf("UserRepo.Update: %w", mapError(err))
 	}
 	if n == 0 {
 		// Either the row is gone or its version moved on; tell the two apart.
@@ -106,12 +114,12 @@ func (r *UserRepo) Update(ctx context.Context, u *models.User) error {
 			)`,
 			u.ID,
 		); err != nil {
-			return fmt.Errorf("update user: %w", mapError(err))
+			return fmt.Errorf("UserRepo.Update: %w", mapError(err))
 		}
 		if !exists {
-			return fmt.Errorf("update user: %w", ErrNotFound)
+			return fmt.Errorf("UserRepo.Update: %w", ErrNotFound)
 		}
-		return fmt.Errorf("update user: %w", ErrConflict)
+		return fmt.Errorf("UserRepo.Update: %w", ErrConflict)
 	}
 	u.Version++
 	u.UpdatedAt = now

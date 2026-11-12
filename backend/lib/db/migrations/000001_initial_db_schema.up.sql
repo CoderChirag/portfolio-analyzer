@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `import_files` (
   `content` MEDIUMBLOB NOT NULL,
   `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`import_id`),
-  CONSTRAINT `fk_import_files_import` FOREIGN KEY (`import_id`) REFERENCES `imports` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_import_files_import` FOREIGN KEY (`import_id`) REFERENCES `imports` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Generic Work Queue

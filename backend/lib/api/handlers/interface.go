@@ -8,4 +8,5 @@ import (
 
 type AccountService interface {
 	SignUp(ctx context.Context, in accounts.SignUpInput) (*models.User, error)
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
 }

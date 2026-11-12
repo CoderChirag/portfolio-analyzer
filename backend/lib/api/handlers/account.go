@@ -4,6 +4,8 @@ import (
 	"coderchirag/folio-tracker/lib/api/response"
 	"coderchirag/folio-tracker/lib/service/accounts"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 const maxBodyBytes = 1 << 20 // 1 MiB
@@ -21,7 +23,7 @@ func NewAccountsHandler(svc AccountService) *AccountsHandler {
 func (h *AccountsHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var body SignUpBody
 	if err := response.DecodeJSON(w, r, &body, maxBodyBytes); err != nil {
-		response.JSONError(w, r, err)
+		response.JSONError(w, r, err, nil)
 		return
 	}
 
@@ -31,7 +33,7 @@ func (h *AccountsHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		PAN:   body.PAN,
 	})
 	if err != nil {
-		response.JSONError(w, r, err)
+		response.JSONError(w, r, err, classifyErrors)
 		return
 	}
 
@@ -41,4 +43,16 @@ func (h *AccountsHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Name:  u.Name,
 		Email: u.Email,
 	})
+}
+
+func (h *AccountsHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	u, err := h.svc.GetUserByID(r.Context(), id)
+	if err != nil {
+		response.JSONError(w, r, err, classifyErrors)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, u)
 }
