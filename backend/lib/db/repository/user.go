@@ -2,9 +2,10 @@ package repository
 
 import (
 	"coderchirag/folio-tracker/lib/db"
+	// m "coderchirag/folio-tracker/lib/db/folio/model"
+	// t "coderchirag/folio-tracker/lib/db/folio/table"
 	"coderchirag/folio-tracker/lib/db/models"
 	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/db/query_builder"
 	"context"
 	"fmt"
 )
@@ -54,22 +55,52 @@ func (r *UserRepo) Create(ctx context.Context, u *models.User) error {
 }
 
 func (r *UserRepo) GetByID(ctx context.Context, userID types.ID) (*models.User, error) {
-	qb, err := query_builder.New[models.User](r.db, models.UserTable, query_builder.SelectQuery)
-	if err != nil {
-		return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
-	}
+	// qb, err := query_builder.New[models.User](r.db, models.UserTable, query_builder.SelectQuery)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
+	// }
 
-	var u models.User
-	_, err = qb.SelectAll().Where(qb.Cond(
-		qb.Col(&qb.Model.ID),
-		query_builder.EqualOp,
-		userID,
-	)).ExecContext(ctx, &u)
-	if err != nil {
-		return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
-	}
+	// var u models.User
+	// _, err = qb.SelectAll().Where(qb.Cond(
+	// 	qb.Col(&qb.Model.ID),
+	// 	query_builder.EqualOp,
+	// 	userID,
+	// )).ExecContext(ctx, &u)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("UserRepo.GetByID: %w", mapError(err))
+	// }
 
-	return &u, nil
+	// q := my.SELECT(
+	// 	t.Users.AllColumns,
+	// ).FROM(
+	// 	t.Users,
+	// ).WHERE(
+	// 	t.Users.ID.EQ(my.Blob(userID[:])),
+	// )
+	// if slog.Default().Enabled(ctx, slog.LevelDebug) {
+	// 	slog.DebugContext(ctx, "sql query", "query", q.DebugSql())
+	// }
+
+	// var dest struct {
+	// 	m.Users
+	// }
+	// err := q.Query(r.db, &dest)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Users.Repo.GetByID: sql error: %w", err)
+	// }
+	// var id types.ID
+	// if err := id.Scan(dest.ID); err != nil {
+	// 	return nil, fmt.Errorf("Users.Repo.GetByID: parse id error: %w", err)
+	// }
+	return &models.User{
+		// ID:        id,
+		// Name:      dest.Name,
+		// Email:     dest.Email,
+		// PAN:       dest.Pan,
+		// CreatedAt: dest.CreatedAt,
+		// UpdatedAt: dest.UpdatedAt,
+		// Version:   dest.Version,
+	}, nil
 }
 
 func (r *UserRepo) GetByEmail(ctx context.Context, userEmail string) (*models.User, error) {

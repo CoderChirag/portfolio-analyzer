@@ -55,24 +55,6 @@ func IsAsciiDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
-// optionalUpper trims s; returns nil if empty, otherwise an uppercased copy.
-func OptionalUpper(s string) *string {
-	s = strings.ToUpper(strings.TrimSpace(s))
-	if s == "" {
-		return nil
-	}
-	return &s
-}
-
-// OptionalTrim trims s; returns nil if empty, otherwise the trimmed copy.
-func OptionalTrim(s string) *string {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return nil
-	}
-	return &s
-}
-
 // TruncateRunes caps s at n characters without splitting a multi-byte character.
 func TruncateRunes(s string, n int) string {
 	count := 0
