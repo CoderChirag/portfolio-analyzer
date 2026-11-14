@@ -76,13 +76,8 @@ func (u *User) Validate() error {
 		errs.Add("name", ErrUserNameInvalid)
 	}
 
-	switch {
-	case u.Email == "":
-		errs.Add("email", ErrUserEmailRequired)
-	case len(u.Email) > userEmailMaxLen:
-		errs.Add("email", ErrUserEmailTooLong)
-	case !utils.IsBareEmail(u.Email):
-		errs.Add("email", ErrUserEmailInvalid)
+	if err := ValidateEmail(u.Email); err != nil {
+		errs.Add("email", err)
 	}
 
 	if u.PAN != "" && !panPattern.MatchString(u.PAN) {
@@ -94,4 +89,16 @@ func (u *User) Validate() error {
 
 func NormalizeEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
+}
+
+func ValidateEmail(email string) error {
+	switch {
+	case email == "":
+		return ErrUserEmailRequired
+	case len(email) > userEmailMaxLen:
+		return ErrUserEmailTooLong
+	case !utils.IsBareEmail(email):
+		return ErrUserEmailInvalid
+	}
+	return nil
 }

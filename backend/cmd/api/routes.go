@@ -17,6 +17,7 @@ func registerRoutes(r *chi.Mux, handlers handlerStore) {
 
 	r.Post("/signup", handlers.Accounts.SignUp)
 	r.Get("/users/{id}", handlers.Accounts.GetUserByID)
+	r.Get("/users", handlers.Accounts.GetUser)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		response.JSONError(w, r, response.ErrNotFound, nil)
