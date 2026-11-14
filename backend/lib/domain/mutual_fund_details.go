@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
 	"errors"
 	"strings"
 	"time"
@@ -24,7 +23,7 @@ var (
 // AMC is optional because sources reveal it unevenly
 // (Groww orders CSV has none; the holdings CSV has it).
 type MutualFundDetails struct {
-	InstrumentID types.ID
+	InstrumentID ID
 	AMC          string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
@@ -37,10 +36,10 @@ type MutualFundDetailsParams struct {
 }
 
 // NewMutualFundDetails normalizes and validates input.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewMutualFundDetails(p MutualFundDetailsParams) (*MutualFundDetails, error) {
 	if p.Instrument == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("instrument", ErrMFDetailsInstrumentRequired)
 		return nil, errs.Err()
 	}
@@ -59,7 +58,7 @@ func NewMutualFundDetails(p MutualFundDetailsParams) (*MutualFundDetails, error)
 // Validate mirrors the table's constraints. The table doesn't store the
 // asset type, so the MF-only rule is enforced here against the instrument.
 func (d *MutualFundDetails) Validate(inst *Instrument, at AssetType) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if d.InstrumentID.IsZero() {
 		errs.Add("instrument", ErrMFDetailsInstrumentRequired)

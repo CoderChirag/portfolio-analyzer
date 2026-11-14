@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -34,18 +33,18 @@ var (
 // ImportRowError records why one row of an imported file was skipped.
 // A row can have several, e.g. an unknown ISIN and a bad quantity.
 type ImportRowError struct {
-	ID         types.ID
-	ImportID   types.ID
+	ID         ID
+	ImportID   ID
 	LineNumber uint32
 	Field      string
 	Code       string
 	Message    string
-	RawRow     types.JSON
+	RawRow     JSON
 	CreatedAt  time.Time
 }
 
 type ImportRowErrorParams struct {
-	ImportID   types.ID
+	ImportID   ID
 	LineNumber uint32
 	Field      string // file column, e.g. "ISIN"; empty if it concerns the whole row
 	Code       string // stable machine code, e.g. "UNKNOWN_ISIN"
@@ -56,10 +55,10 @@ type ImportRowErrorParams struct {
 }
 
 // NewImportRowError normalizes and validates input and assigns a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewImportRowError(p ImportRowErrorParams) (*ImportRowError, error) {
 	e := &ImportRowError{
-		ID:         types.NewID(),
+		ID:         NewID(),
 		ImportID:   p.ImportID,
 		LineNumber: p.LineNumber,
 		Field:      strings.TrimSpace(p.Field),
@@ -83,7 +82,7 @@ func NewImportRowError(p ImportRowErrorParams) (*ImportRowError, error) {
 
 // Validate mirrors the table's column limits.
 func (e *ImportRowError) Validate() error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if e.ImportID.IsZero() {
 		errs.Add("import", ErrRowErrorImportRequired)

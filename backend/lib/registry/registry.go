@@ -1,47 +1,84 @@
 package registry
 
 import (
-	"coderchirag/folio-tracker/lib/db/models"
+	"coderchirag/folio-tracker/lib/domain"
 	"coderchirag/folio-tracker/lib/lookup"
 	"context"
 	"fmt"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type Registry struct {
-	DataSource      *lookup.Registry[models.DataSourceID, models.DataSourceCode, models.DataSource]
-	AssetType       *lookup.Registry[models.AssetTypeID, models.AssetTypeCode, models.AssetType]
-	TransactionType *lookup.Registry[models.TransactionTypeID, models.TransactionTypeCode, models.TransactionType]
+	dataSourceStore RegistryStore[domain.DataSource]
+	dataSource      *lookup.Registry[domain.DataSourceID, domain.DataSourceCode, domain.DataSource]
+
+	assetTypeStore RegistryStore[domain.AssetType]
+	assetType      *lookup.Registry[domain.AssetTypeID, domain.AssetTypeCode, domain.AssetType]
+
+	transactionTypeStore RegistryStore[domain.TransactionType]
+	transactionType      *lookup.Registry[domain.TransactionTypeID, domain.TransactionTypeCode, domain.TransactionType]
 }
 
-func Load(ctx context.Context, sqlDB *sqlx.DB) (*Registry, error) {
-	ds, err := lookup.Load[models.DataSourceID, models.DataSourceCode, models.DataSource](
-		ctx, sqlDB, models.DataSourceTable, models.SourceGroww,
-	)
+type RegistryLoadParams struct {
+	DataSourceStore      RegistryStore[domain.DataSource]
+	AssetTypeStore       RegistryStore[domain.AssetType]
+	TransactionTypeStore RegistryStore[domain.TransactionType]
+}
+
+func Load(ctx context.Context, p *RegistryLoadParams) (*Registry, error) {
+	datasources, err := p.DataSourceStore.GetAll(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("lookup %q: %w", models.DataSourceTable, err)
+		return nil, fmt.Errorf("registry.Load: lookup datasources: %w", err)
+	}
+	assetTypes, err := p.AssetTypeStore.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("registry.Load: lookup assettypes: %w", err)
+	}
+	transactionTypes, err := p.TransactionTypeStore.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("registry.Load: lookup transactiontypes: %w", err)
 	}
 
-	at, err := lookup.Load[models.AssetTypeID, models.AssetTypeCode, models.AssetType](
-		ctx, sqlDB, models.AssetTypeTable,
-		models.AssetStock, models.AssetETF, models.AssetMF,
+	ds, err := lookup.New[domain.DataSourceID, domain.DataSourceCode, domain.DataSource](
+		"DataSource", datasources, domain.SourceGroww,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("lookup %q: %w", models.AssetTypeTable, err)
+		return nil, fmt.Errorf("registry.Load: %w", err)
 	}
-
-	tt, err := lookup.Load[models.TransactionTypeID, models.TransactionTypeCode, models.TransactionType](
-		ctx, sqlDB, models.TransactionTypeTable,
-		models.TxnBuy, models.TxnSell,
+	at, err := lookup.New[domain.AssetTypeID, domain.AssetTypeCode, domain.AssetType](
+		"AssetType", assetTypes,
+		domain.AssetStock, domain.AssetETF, domain.AssetMF,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("lookup %q: %w", models.TransactionTypeTable, err)
+		return nil, fmt.Errorf("registry.Load: %w", err)
+	}
+	tt, err := lookup.New[domain.TransactionTypeID, domain.TransactionTypeCode, domain.TransactionType](
+		"TransactionType", transactionTypes,
+		domain.TxnBuy, domain.TxnSell,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("registry.Load: %w", err)
 	}
 
 	return &Registry{
-		DataSource:      ds,
-		AssetType:       at,
-		TransactionType: tt,
+		dataSourceStore: p.DataSourceStore,
+		dataSource:      ds,
+
+		assetTypeStore: p.AssetTypeStore,
+		assetType:      at,
+
+		transactionTypeStore: p.TransactionTypeStore,
+		transactionType:      tt,
 	}, nil
+}
+
+func (r *Registry) DataSource() *lookup.Registry[domain.DataSourceID, domain.DataSourceCode, domain.DataSource] {
+	return r.dataSource
+}
+
+func (r *Registry) AssetType() *lookup.Registry[domain.AssetTypeID, domain.AssetTypeCode, domain.AssetType] {
+	return r.assetType
+}
+
+func (r *Registry) TransactionType() *lookup.Registry[domain.TransactionTypeID, domain.TransactionTypeCode, domain.TransactionType] {
+	return r.transactionType
 }

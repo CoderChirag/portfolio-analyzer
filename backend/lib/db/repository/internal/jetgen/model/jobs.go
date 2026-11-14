@@ -18,7 +18,7 @@ type Jobs struct {
 	Payload     domain.JSON
 	DedupeKey   *string
 	UserID      *domain.ID
-	Status      string
+	Status      domain.JobStatus
 	Attempts    uint16
 	MaxAttempts uint16
 	AvailableAt time.Time

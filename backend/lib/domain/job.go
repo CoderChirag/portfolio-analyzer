@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"encoding/json"
 	"errors"
 	"regexp"
@@ -80,11 +79,11 @@ var (
 
 // Job is one unit of background work. Its business outcome lives elsewhere (e.g. imports).
 type Job struct {
-	ID          types.ID
+	ID          ID
 	Type        JobType
-	Payload     types.JSON
+	Payload     JSON
 	DedupeKey   string
-	UserID      types.ID
+	UserID      ID
 	Status      JobStatus
 	Attempts    uint16
 	MaxAttempts uint16
@@ -100,7 +99,7 @@ type JobParams struct {
 	Type        JobType
 	Payload     any    // marshaled to JSON; must encode as an object
 	DedupeKey   string // empty means no dedup
-	UserID      types.ID
+	UserID      ID
 	MaxAttempts uint16    // 0 means DefaultJobMaxAttempts
 	AvailableAt time.Time // earliest run time; pass the clock's now to run immediately
 }
@@ -111,17 +110,17 @@ var (
 )
 
 // NewJob validates input and returns a queued job with a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewJob(p JobParams) (*Job, error) {
 	payload, err := json.Marshal(p.Payload)
 	if err != nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("payload", ErrJobPayloadInvalid)
 		return nil, errs.Err()
 	}
 
 	j := &Job{
-		ID:          types.NewID(),
+		ID:          NewID(),
 		Type:        p.Type,
 		Payload:     payload,
 		DedupeKey:   strings.TrimSpace(p.DedupeKey),
@@ -144,7 +143,7 @@ func NewJob(p JobParams) (*Job, error) {
 
 // Validate mirrors the table's CHECK constraints and column limits.
 func (j *Job) Validate() error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if len(j.Type) > jobTypeMaxLen || !jobTypePattern.MatchString(string(j.Type)) {
 		errs.Add("type", ErrJobTypeInvalid)
@@ -194,13 +193,13 @@ func JobErrorText(err error) string {
 
 // ImportJobPayload is the payload of an import.process job.
 type ImportJobPayload struct {
-	ImportID types.ID `json:"importId"`
+	ImportID ID `json:"importId"`
 }
 
 // NewImportJob queues processing of imp. The dedupe key allows one active job per import.
 func NewImportJob(imp *Import, now time.Time) (*Job, error) {
 	if imp == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("import", ErrJobImportRequired)
 		return nil, errs.Err()
 	}

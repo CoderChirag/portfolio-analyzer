@@ -1,8 +1,7 @@
 package response
 
 import (
-	"coderchirag/folio-tracker/lib/db/repository"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
 	"errors"
 	"net/http"
 )
@@ -27,18 +26,18 @@ type ErrorBody struct {
 }
 
 func Classify(err error) (int, *ErrorBody) {
-	var verrs validation.Errors
-	var dup *repository.DuplicateError
+	var verrs apperr.ValidationError
+	var dup *apperr.DuplicateError
 	switch {
 	case errors.Is(err, ErrBadRequest):
 		return http.StatusBadRequest, &ErrorBody{
 			Code: "BAD_REQUEST",
 			Msg:  err.Error(),
 		}
-	case errors.Is(err, repository.ErrNotFound):
+	case errors.Is(err, apperr.ErrNotFound):
 		return http.StatusNotFound, &ErrorBody{
 			Code: "NOT_FOUND",
-			Msg:  repository.ErrNotFound.Error(),
+			Msg:  apperr.ErrNotFound.Error(),
 		}
 	case errors.Is(err, ErrNotFound):
 		return http.StatusNotFound, &ErrorBody{
@@ -56,10 +55,15 @@ func Classify(err error) (int, *ErrorBody) {
 			b.Fields = []fieldError{{Field: dup.Field, Msg: dup.Reason.Error()}}
 		}
 		return http.StatusConflict, b
-	case errors.Is(err, repository.ErrConflict):
+	case errors.Is(err, apperr.ErrConflict):
 		return http.StatusConflict, &ErrorBody{
 			Code: "CONFLICT",
-			Msg:  repository.ErrConflict.Error(),
+			Msg:  apperr.ErrConflict.Error(),
+		}
+	case errors.Is(err, apperr.ErrReferenced):
+		return http.StatusConflict, &ErrorBody{
+			Code: "IN_USE",
+			Msg:  apperr.ErrReferenced.Error(),
 		}
 	case errors.Is(err, ErrEntityTooLarge):
 		return http.StatusRequestEntityTooLarge, &ErrorBody{
@@ -75,6 +79,16 @@ func Classify(err error) (int, *ErrorBody) {
 			Code:   "VALIDATION_FAILED",
 			Msg:    "validation failed",
 			Fields: fields,
+		}
+	case errors.Is(err, apperr.ErrInvalidRef):
+		return http.StatusUnprocessableEntity, &ErrorBody{
+			Code: "INVALID_REFERENCE",
+			Msg:  apperr.ErrInvalidRef.Error(),
+		}
+	case errors.Is(err, apperr.ErrRetryable):
+		return http.StatusServiceUnavailable, &ErrorBody{
+			Code: "RETRYABLE",
+			Msg:  apperr.ErrRetryable.Error(),
 		}
 	default:
 		return http.StatusInternalServerError, &ErrorBody{

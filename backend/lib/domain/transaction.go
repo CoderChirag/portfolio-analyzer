@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"regexp"
 	"strings"
@@ -40,12 +39,12 @@ var (
 
 // Transaction is one row of the core ledger, common to every asset class.
 type Transaction struct {
-	ID                types.ID
-	UserID            types.ID
+	ID                ID
+	UserID            ID
 	DataSourceID      DataSourceID
-	InstrumentID      types.ID
+	InstrumentID      ID
 	TransactionTypeID TransactionTypeID
-	ImportID          types.ID
+	ImportID          ID
 	TradeDate         time.Time
 	ExecutedAt        time.Time
 	Quantity          decimal.Decimal
@@ -58,11 +57,11 @@ type Transaction struct {
 
 // TransactionParams uses named fields so same-typed values can't be swapped by position.
 type TransactionParams struct {
-	UserID          types.ID
+	UserID          ID
 	DataSourceID    DataSourceID
 	Instrument      *Instrument
 	TransactionType TransactionType // from the lookup registry
-	ImportID        types.ID        // the upload that produced it; nil for manual entries
+	ImportID        ID              // the upload that produced it; nil for manual entries
 	TradeDate       time.Time       // only the year, month and day are used
 	ExecutedAt      time.Time       // any time zone; stored as UTC
 	Quantity        decimal.Decimal
@@ -74,16 +73,16 @@ type TransactionParams struct {
 var currencyPattern = regexp.MustCompile(`^[A-Z]{3}$`)
 
 // NewTransaction normalizes and validates input and assigns a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewTransaction(p TransactionParams) (*Transaction, error) {
 	if p.Instrument == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("instrument", ErrTxnInstrumentRequired)
 		return nil, errs.Err()
 	}
 
 	t := &Transaction{
-		ID:                types.NewID(),
+		ID:                NewID(),
 		UserID:            p.UserID,
 		DataSourceID:      p.DataSourceID,
 		InstrumentID:      p.Instrument.ID,
@@ -110,7 +109,7 @@ func NewTransaction(p TransactionParams) (*Transaction, error) {
 
 // Validate mirrors the table's CHECK constraints and column limits.
 func (t *Transaction) Validate(tt TransactionType) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if t.UserID.IsZero() {
 		errs.Add("user", ErrTxnUserRequired)

@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"regexp"
 	"strings"
@@ -25,14 +24,13 @@ var (
 	ErrUserEmailRequired = errors.New("email is required")
 	ErrUserEmailTooLong  = errors.New("email must be at most 254 characters")
 	ErrUserEmailInvalid  = errors.New("email is not a valid address")
-	ErrUserPANRequired   = errors.New("PAN is required")
 	ErrUserPANInvalid    = errors.New("PAN must look like ABCDE1234F")
 	ErrUserEmailTaken    = errors.New("email is already registered")
 	ErrUserPANTaken      = errors.New("PAN is already registered")
 )
 
 type User struct {
-	ID        types.ID
+	ID        ID
 	Name      string
 	Email     string
 	PAN       string
@@ -50,10 +48,10 @@ type UserParams struct {
 var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")
 
 // NewUser normalizes and validates input and assigns a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewUser(p UserParams) (*User, error) {
 	user := &User{
-		ID:    types.NewID(),
+		ID:    NewID(),
 		Name:  strings.TrimSpace(p.Name),
 		Email: NormalizeEmail(p.Email),
 		PAN:   strings.ToUpper(strings.TrimSpace(p.PAN)),
@@ -67,7 +65,7 @@ func NewUser(p UserParams) (*User, error) {
 // Validate checks every field and reports all problems, not just the first.
 // Exported so updates (not just creation) can re-validate.
 func (u *User) Validate() error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	switch n := utf8.RuneCountInString(u.Name); {
 	case n == 0:
@@ -85,10 +83,6 @@ func (u *User) Validate() error {
 		errs.Add("email", ErrUserEmailTooLong)
 	case !utils.IsBareEmail(u.Email):
 		errs.Add("email", ErrUserEmailInvalid)
-	}
-
-	if u.PAN == "" {
-		errs.Add("pan", ErrUserPANRequired)
 	}
 
 	if u.PAN != "" && !panPattern.MatchString(u.PAN) {

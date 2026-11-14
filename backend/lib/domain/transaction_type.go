@@ -31,8 +31,6 @@ func (c TransactionTypeCode) IsValid() bool {
 	return false
 }
 
-const TransactionTypeTable = "transaction_types"
-
 var _ lookup.Entry[TransactionTypeID, TransactionTypeCode] = TransactionType{}
 
 type TransactionType struct {

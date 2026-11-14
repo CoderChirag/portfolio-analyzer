@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
 	"errors"
 	"regexp"
 	"strings"
@@ -24,7 +23,7 @@ var (
 )
 
 type Instrument struct {
-	ID          types.ID
+	ID          ID
 	AssetTypeID AssetTypeID
 	Name        string
 	ISIN        string
@@ -42,10 +41,10 @@ type InstrumentParams struct {
 var isinPattern = regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{9}[0-9]$`)
 
 // NewInstrument normalizes and validates input and assigns a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewInstrument(p InstrumentParams) (*Instrument, error) {
 	i := &Instrument{
-		ID:          types.NewID(),
+		ID:          NewID(),
 		AssetTypeID: p.AssetType.ID,
 		Name:        strings.TrimSpace(p.Name),
 		ISIN:        strings.ToUpper(strings.TrimSpace(p.ISIN)),
@@ -60,7 +59,7 @@ func NewInstrument(p InstrumentParams) (*Instrument, error) {
 // Validate checks every field and reports all problems, not just the first.
 // It mirrors the table's CHECK constraints so bad data fails here, not at INSERT.
 func (i *Instrument) Validate(at AssetType) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if i.AssetTypeID.IsZero() || at.Code.IsEmpty() || at.ID != i.AssetTypeID {
 		errs.Add("assetType", ErrInstrumentAssetTypeRequired)

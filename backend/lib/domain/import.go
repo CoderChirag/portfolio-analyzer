@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"crypto/sha256"
 	"errors"
 	"regexp"
@@ -81,8 +80,8 @@ var (
 
 // Import is one uploaded file and the outcome of processing it.
 type Import struct {
-	ID            types.ID
-	UserID        types.ID
+	ID            ID
+	UserID        ID
 	DataSourceID  DataSourceID
 	Kind          ImportKind
 	FileName      string
@@ -103,7 +102,7 @@ type Import struct {
 }
 
 type ImportParams struct {
-	UserID       types.ID
+	UserID       ID
 	DataSourceID DataSourceID
 	Kind         ImportKind
 	FileName     string // as sent by the client; any directory part is dropped
@@ -113,17 +112,17 @@ type ImportParams struct {
 var errorCodePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 
 // NewImport normalizes and validates input, assigns a fresh ID and starts it as queued.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewImport(p ImportParams) (*Import, error) {
 	if len(p.Content) > MaxImportFileSize {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("file", ErrImportFileTooLarge)
 		return nil, errs.Err()
 	}
 
 	sum := sha256.Sum256(p.Content)
 	imp := &Import{
-		ID:           types.NewID(),
+		ID:           NewID(),
 		UserID:       p.UserID,
 		DataSourceID: p.DataSourceID,
 		Kind:         p.Kind,
@@ -141,7 +140,7 @@ func NewImport(p ImportParams) (*Import, error) {
 
 // Validate mirrors the table's CHECK constraints and column limits.
 func (i *Import) Validate() error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if i.UserID.IsZero() {
 		errs.Add("user", ErrImportUserRequired)

@@ -2,9 +2,8 @@ package domain
 
 import (
 	"bytes"
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"crypto/sha256"
 	"errors"
 	"regexp"
@@ -51,7 +50,7 @@ var (
 // ImportFile holds an import's uploaded bytes, 1:1 with imports.
 // Kept apart so status polls and history lists never read the blob.
 type ImportFile struct {
-	ImportID    types.ID
+	ImportID    ID
 	ContentType string
 	Content     []byte
 	CreatedAt   time.Time
@@ -67,10 +66,10 @@ type ImportFileParams struct {
 var mediaTypePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*$`)
 
 // NewImportFile normalizes the media type and checks the bytes are the ones the import describes.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewImportFile(p ImportFileParams) (*ImportFile, error) {
 	if p.Import == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("import", ErrImportFileImportRequired)
 		return nil, errs.Err()
 	}
@@ -90,7 +89,7 @@ func NewImportFile(p ImportFileParams) (*ImportFile, error) {
 
 // Validate mirrors the column limits and ties the bytes to the import's size and hash.
 func (f *ImportFile) Validate(imp *Import) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if f.ImportID.IsZero() || imp == nil || imp.ID != f.ImportID {
 		errs.Add("import", ErrImportFileImportRequired)

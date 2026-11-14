@@ -1,0 +1,49 @@
+package accountshandler
+
+import (
+	"coderchirag/folio-tracker/lib/api/response"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
+
+const maxBodyBytes = 1 << 20 // 1 MiB
+
+type Handler struct {
+	svc AccountService
+}
+
+func New(svc AccountService) *Handler {
+	return &Handler{
+		svc: svc,
+	}
+}
+
+func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
+	var body SignUpBody
+	if err := response.DecodeJSON(w, r, &body, maxBodyBytes); err != nil {
+		response.JSONError(w, r, err, nil)
+		return
+	}
+
+	u, err := h.svc.SignUp(r.Context(), body.ToSignUpSvcInput())
+	if err != nil {
+		response.JSONError(w, r, err, classifyErrors)
+		return
+	}
+
+	w.Header().Set("Location", "/users/"+u.ID.String())
+	response.JSON(w, http.StatusCreated, User{}.FromDomain(u))
+}
+
+func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	u, err := h.svc.GetUserByID(r.Context(), id)
+	if err != nil {
+		response.JSONError(w, r, err, classifyErrors)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, User{}.FromDomain(u))
+}

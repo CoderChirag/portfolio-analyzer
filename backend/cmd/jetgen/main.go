@@ -37,7 +37,7 @@ var columnTypes = map[string]any{
 	"imports.status":            domain.ImportStatus(""),
 	"import_files.content_type": domain.ContentType(""),
 	"jobs.job_type":             domain.JobType(""),
-	"jobs.job_status":           domain.JobStatus(""),
+	"jobs.status":               domain.JobStatus(""),
 }
 
 // Lookup-table foreign keys, by column name; the same in every table.
@@ -71,7 +71,7 @@ func Main(out string) {
 	tmpl := template.Default(mysqldialect.Dialect).
 		UseSchema(func(schema metadata.Schema) template.Schema {
 			return template.DefaultSchema(schema).
-				UsePath("internal"). // not the DB name, so output doesn't depend on the environment
+				UsePath("internal/jetgen"). // not the DB name, so output doesn't depend on the environment
 				UseModel(template.DefaultModel().
 					UsePath("model").
 					UseTable(func(table metadata.Table) template.TableModel {

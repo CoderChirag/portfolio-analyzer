@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
+	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
-	"coderchirag/folio-tracker/lib/validation"
 	"errors"
 	"strings"
 	"time"
@@ -27,11 +26,11 @@ var (
 )
 
 type InstrumentAlias struct {
-	ID              types.ID
+	ID              ID
 	DataSourceID    DataSourceID
 	Alias           string
 	NormalizedAlias string
-	InstrumentID    types.ID
+	InstrumentID    ID
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -39,13 +38,13 @@ type InstrumentAlias struct {
 type InstrumentAliasParams struct {
 	Source       DataSource
 	Alias        string
-	InstrumentID types.ID
+	InstrumentID ID
 }
 
 func NewInstrumentAlias(p InstrumentAliasParams) (*InstrumentAlias, error) {
 	canonical := strings.TrimSpace(p.Alias)
 	a := &InstrumentAlias{
-		ID:              types.NewID(),
+		ID:              NewID(),
 		DataSourceID:    p.Source.ID,
 		Alias:           canonical,
 		NormalizedAlias: utils.NormalizeFundName(canonical, maxNormalizedAliasLen),
@@ -58,7 +57,7 @@ func NewInstrumentAlias(p InstrumentAliasParams) (*InstrumentAlias, error) {
 }
 
 func (a *InstrumentAlias) Validate() error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if a.DataSourceID.IsZero() {
 		errs.Add("dataSource", ErrAliasSourceRequired)

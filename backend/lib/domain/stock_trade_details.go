@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
 	"errors"
 	"regexp"
 	"strings"
@@ -25,7 +24,7 @@ var (
 // (Exchange, TradeDate, ExchangeOrderID) identifies the order: exchanges
 // restart order numbering every trading day.
 type StockTradeDetails struct {
-	TransactionID   types.ID
+	TransactionID   ID
 	TradeDate       time.Time
 	Exchange        Exchange
 	ExchangeOrderID string
@@ -44,10 +43,10 @@ type StockTradeDetailsParams struct {
 var exchangeOrderIDPattern = regexp.MustCompile(`^[A-Za-z0-9]+$`)
 
 // NewStockTradeDetails normalizes and validates input.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewStockTradeDetails(p StockTradeDetailsParams) (*StockTradeDetails, error) {
 	if p.Transaction == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("transaction", ErrStockTradeTransactionRequired)
 		return nil, errs.Err()
 	}
@@ -68,7 +67,7 @@ func NewStockTradeDetails(p StockTradeDetailsParams) (*StockTradeDetails, error)
 // Validate mirrors the table's CHECK constraints. The table doesn't store the
 // asset type, so the stock/ETF-only rule is enforced here against the instrument.
 func (d *StockTradeDetails) Validate(txn *Transaction, inst *Instrument, at AssetType) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if txn == nil || d.TransactionID.IsZero() || txn.ID != d.TransactionID || !txn.TradeDate.Equal(d.TradeDate) {
 		errs.Add("transaction", ErrStockTradeTransactionRequired)

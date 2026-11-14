@@ -1,9 +1,8 @@
 package accounts
 
 import (
-	"coderchirag/folio-tracker/lib/db/models"
-	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
+	"coderchirag/folio-tracker/lib/domain"
 	"context"
 	"fmt"
 )
@@ -12,14 +11,14 @@ type Service struct {
 	users UserStore
 }
 
-func NewService(users UserStore) *Service {
+func New(users UserStore) *Service {
 	return &Service{
 		users: users,
 	}
 }
 
-func (s *Service) SignUp(ctx context.Context, in SignUpInput) (*models.User, error) {
-	u, err := models.NewUser(models.UserParams{
+func (s *Service) SignUp(ctx context.Context, in *SignUpInput) (*domain.User, error) {
+	u, err := domain.NewUser(domain.UserParams{
 		Name:  in.Name,
 		Email: in.Email,
 		PAN:   in.PAN,
@@ -35,10 +34,10 @@ func (s *Service) SignUp(ctx context.Context, in SignUpInput) (*models.User, err
 	return u, nil
 }
 
-func (s *Service) GetUserByID(ctx context.Context, id string) (*models.User, error) {
-	userID, err := types.ParseID(id)
+func (s *Service) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
+	userID, err := domain.ParseID(id)
 	if err != nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("id", ErrInvalidUserID)
 		return nil, errs
 	}

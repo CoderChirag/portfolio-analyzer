@@ -1,4 +1,4 @@
-package handlers
+package accountshandler
 
 import (
 	"coderchirag/folio-tracker/lib/api/response"

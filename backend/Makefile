@@ -1,7 +1,4 @@
-.Phony: build gen_models
-
-make gen_models:
-	jet -source=mysql -dsn="folio:folio@tcp(localhost:3306)/folio" -path=./lib/db
+.PHONY: build migrate jetgen start test
 
 build:
 	CGO_ENABLED=0 go build -o folio-tracker ./cmd

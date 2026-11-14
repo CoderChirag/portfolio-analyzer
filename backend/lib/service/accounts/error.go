@@ -1,7 +1,7 @@
 package accounts
 
-import "fmt"
+import "errors"
 
 var (
-	ErrInvalidUserID = fmt.Errorf("invalid user id")
+	ErrInvalidUserID = errors.New("invalid user id")
 )

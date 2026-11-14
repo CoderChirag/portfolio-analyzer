@@ -1,4 +1,4 @@
-package validation
+package apperr
 
 import (
 	"errors"
@@ -8,8 +8,11 @@ import (
 // FieldError is one invalid field. It wraps a sentinel so callers can use errors.Is.
 type FieldError struct {
 	Field string // JSON field name, e.g. "email"
-	Err   error  // sentinel, e.g. models.ErrUserEmailInvalid
+	Err   error  // sentinel, e.g. domain.ErrUserEmailInvalid
 }
+
+// ValidationError collects every invalid field so the API can report them all at once.
+type ValidationError []*FieldError
 
 func (e *FieldError) Error() string {
 	return e.Field + ": " + e.Err.Error()
@@ -19,10 +22,7 @@ func (e *FieldError) Unwrap() error {
 	return e.Err
 }
 
-// Errors collects every invalid field so the API can report them all at once.
-type Errors []*FieldError
-
-func (es Errors) Error() string {
+func (es ValidationError) Error() string {
 	msgs := make([]string, len(es))
 	for i, e := range es {
 		msgs[i] = e.Error()
@@ -31,7 +31,7 @@ func (es Errors) Error() string {
 }
 
 // Unwrap lets errors.Is / errors.As see every field error (Go 1.20+).
-func (es Errors) Unwrap() []error {
+func (es ValidationError) Unwrap() []error {
 	out := make([]error, len(es))
 	for i, e := range es {
 		out[i] = e
@@ -40,12 +40,12 @@ func (es Errors) Unwrap() []error {
 }
 
 // Add records a field error.
-func (es *Errors) Add(field string, err error) {
+func (es *ValidationError) Add(field string, err error) {
 	*es = append(*es, &FieldError{Field: field, Err: err})
 }
 
 // Err returns nil when nothing was added, so callers can `return errs.Err()`.
-func (es Errors) Err() error {
+func (es ValidationError) Err() error {
 	if len(es) == 0 {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (es Errors) Err() error {
 
 // IsValidation reports whether err is (or wraps) a validation failure.
 func IsValidation(err error) bool {
-	var es Errors
+	var es ValidationError
 	var fe *FieldError
 	return errors.As(err, &es) || errors.As(err, &fe)
 }

@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"coderchirag/folio-tracker/lib/db/models/types"
-	"coderchirag/folio-tracker/lib/validation"
+	"coderchirag/folio-tracker/lib/apperr"
 	"errors"
 	"regexp"
 	"strings"
@@ -39,8 +38,8 @@ var (
 // InstrumentListing is one exchange listing of an exchange-traded instrument.
 // BSE listings carry the numeric scrip code as the symbol.
 type InstrumentListing struct {
-	ID           types.ID
-	InstrumentID types.ID
+	ID           ID
+	InstrumentID ID
 	Exchange     Exchange
 	Symbol       string
 	CreatedAt    time.Time
@@ -57,16 +56,16 @@ type InstrumentListingParams struct {
 var symbolPattern = regexp.MustCompile(`^[A-Z0-9&_-]+$`)
 
 // NewInstrumentListing normalizes and validates input and assigns a fresh ID.
-// On failure it returns validation.Errors listing every invalid field.
+// On failure it returns apperr.ValidationError listing every invalid field.
 func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error) {
 	if p.Instrument == nil {
-		var errs validation.Errors
+		var errs apperr.ValidationError
 		errs.Add("instrument", ErrListingInstrumentRequired)
 		return nil, errs.Err()
 	}
 
 	l := &InstrumentListing{
-		ID:           types.NewID(),
+		ID:           NewID(),
 		InstrumentID: p.Instrument.ID,
 		Exchange:     Exchange(strings.ToUpper(strings.TrimSpace(string(p.Exchange)))),
 		Symbol:       strings.ToUpper(strings.TrimSpace(p.Symbol)),
@@ -81,7 +80,7 @@ func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error)
 // Validate mirrors the table's CHECK constraints. The table doesn't store the
 // asset type, so the stock/ETF-only rule is enforced here against the instrument.
 func (l *InstrumentListing) Validate(inst *Instrument, at AssetType) error {
-	var errs validation.Errors
+	var errs apperr.ValidationError
 
 	if l.InstrumentID.IsZero() {
 		errs.Add("instrument", ErrListingInstrumentRequired)

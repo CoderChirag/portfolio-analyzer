@@ -23,6 +23,10 @@ func (id ID) String() string {
 	return uuid.UUID(id).String()
 }
 
+func (id ID) Binary() []byte {
+	return id[:]
+}
+
 // Value writes the 16 raw bytes, not the 36-char text form
 func (id ID) Value() (driver.Value, error) {
 	return id[:], nil
