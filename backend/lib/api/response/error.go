@@ -7,10 +7,13 @@ import (
 )
 
 var (
-	ErrBadRequest       = errors.New("malformed request body")
-	ErrEntityTooLarge   = errors.New("entity too large")
-	ErrNotFound         = errors.New("not found")
-	ErrMethodNotAllowed = errors.New("method not allowed")
+	ErrBadRequest        = errors.New("malformed request body")
+	ErrMultipartParse    = errors.New("error parsing multipart form")
+	ErrUnauthorized      = errors.New("user unauthorized")
+	ErrForbidden         = errors.New("access forbidden")
+	ErrMultipartFormFile = errors.New("error getting multipart form file")
+	ErrEntityTooLarge    = errors.New("entity too large")
+	ErrMethodNotAllowed  = errors.New("method not allowed")
 )
 
 type fieldError struct {
@@ -32,17 +35,27 @@ func Classify(err error) (int, *ErrorBody) {
 	case errors.Is(err, ErrBadRequest):
 		return http.StatusBadRequest, &ErrorBody{
 			Code: "BAD_REQUEST",
-			Msg:  err.Error(),
+			Msg:  ErrBadRequest.Error(),
+		}
+	case errors.Is(err, ErrMultipartParse):
+		return http.StatusBadRequest, &ErrorBody{
+			Code: "BAD_REQUEST",
+			Msg:  ErrMultipartParse.Error(),
+		}
+	case errors.Is(err, ErrUnauthorized):
+		return http.StatusUnauthorized, &ErrorBody{
+			Code: "UNAUTHORIZED",
+			Msg:  ErrUnauthorized.Error(),
+		}
+	case errors.Is(err, ErrForbidden):
+		return http.StatusForbidden, &ErrorBody{
+			Code: "FORBIDDEN",
+			Msg:  ErrForbidden.Error(),
 		}
 	case errors.Is(err, apperr.ErrNotFound):
 		return http.StatusNotFound, &ErrorBody{
 			Code: "NOT_FOUND",
 			Msg:  apperr.ErrNotFound.Error(),
-		}
-	case errors.Is(err, ErrNotFound):
-		return http.StatusNotFound, &ErrorBody{
-			Code: "NOT_FOUND",
-			Msg:  ErrNotFound.Error(),
 		}
 	case errors.Is(err, ErrMethodNotAllowed):
 		return http.StatusMethodNotAllowed, &ErrorBody{
@@ -84,6 +97,11 @@ func Classify(err error) (int, *ErrorBody) {
 		return http.StatusUnprocessableEntity, &ErrorBody{
 			Code: "INVALID_REFERENCE",
 			Msg:  apperr.ErrInvalidRef.Error(),
+		}
+	case errors.Is(err, ErrMultipartFormFile):
+		return http.StatusUnprocessableEntity, &ErrorBody{
+			Code: "UNPROCESSABLE_ENTITY",
+			Msg:  ErrMultipartFormFile.Error(),
 		}
 	case errors.Is(err, apperr.ErrRetryable):
 		return http.StatusServiceUnavailable, &ErrorBody{

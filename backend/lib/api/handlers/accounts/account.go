@@ -1,6 +1,7 @@
 package accountshandler
 
 import (
+	"coderchirag/folio-tracker/lib/api/middlewares/auth"
 	"coderchirag/folio-tracker/lib/api/response"
 	"coderchirag/folio-tracker/lib/apperr"
 	"net/http"
@@ -41,6 +42,11 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 // Gets user by the id provided in URL Params.
 func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	userID := r.Context().Value(auth.UserIDKey)
+	if userID != id {
+		response.JSONError(w, r, ErrUserForbidden, classifyErrors)
+		return
+	}
 
 	u, err := h.svc.GetUserByID(r.Context(), id)
 	if err != nil {
@@ -66,6 +72,12 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	u, err := h.svc.GetUserByEmail(r.Context(), email)
 	if err != nil {
 		response.JSONError(w, r, err, classifyErrors)
+		return
+	}
+
+	userID := r.Context().Value(auth.UserIDKey)
+	if userID != u.ID.String() {
+		response.JSONError(w, r, ErrUserForbidden, classifyErrors)
 		return
 	}
 

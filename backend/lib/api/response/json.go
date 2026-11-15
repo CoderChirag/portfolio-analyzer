@@ -26,6 +26,18 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any, maxbytes int64)
 	return nil
 }
 
+// Wrapper over r.ParseMultipartForm.
+// Parses multipart form (files > maxFileSizeInMemoryBytes spill to temp disk automatically).
+// Writes 400 json error response if parsing error occur
+func ParseMultipartForm(w http.ResponseWriter, r *http.Request, maxMemory int64) error {
+	// Parse multipart form (files > maxFileSizeInMemoryBytes spill to temp disk automatically)
+	if err := r.ParseMultipartForm(maxMemory); err != nil {
+		JSONError(w, r, ErrMultipartParse, Classify)
+		return err
+	}
+	return nil
+}
+
 func JSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
