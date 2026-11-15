@@ -13,6 +13,12 @@ import (
 	mysqldialect "github.com/go-jet/jet/v2/mysql"
 )
 
+const (
+	logPrefix             = "repo:AssetType"
+	getAllPrefix          = "GetAll"
+	queryContextLogPrefix = "QueryContext"
+)
+
 type AssetType struct {
 	db db.DBTX
 }
@@ -28,12 +34,12 @@ func (r *AssetType) GetAll(ctx context.Context) ([]domain.AssetType, error) {
 		SELECT(table.AssetTypes.AllColumns).
 		FROM(table.AssetTypes).
 		ORDER_BY(table.AssetTypes.ID)
-	repository.LogQuery(ctx, "repo:AssetType.GetAll", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, getAllPrefix), q)
 
 	var rows []model.AssetTypes
 	err := q.QueryContext(ctx, r.db, &rows)
 	if err != nil {
-		return nil, fmt.Errorf("repo:AssetType.GetAll: QueryContext: %w", dberr.MapError(err))
+		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getAllPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
 	out := make([]domain.AssetType, len(rows))

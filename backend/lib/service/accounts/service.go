@@ -7,6 +7,13 @@ import (
 	"fmt"
 )
 
+const (
+	logPrefix               = "service:AccountsService"
+	signUpLogPrefix         = "Signup"
+	getUserByIDLogPrefix    = "GetUserByID"
+	getUserByEmailLogPrefix = "GetUserByEmail"
+)
+
 type Service struct {
 	users UserStore
 }
@@ -28,7 +35,7 @@ func (s *Service) SignUp(ctx context.Context, in *SignUpInput) (*domain.User, er
 	}
 
 	if err := s.users.Create(ctx, u); err != nil {
-		return nil, fmt.Errorf("service:AccountsService.Signup: %w", err)
+		return nil, fmt.Errorf("%s.%s: %w", logPrefix, signUpLogPrefix, err)
 	}
 
 	return u, nil
@@ -44,7 +51,7 @@ func (s *Service) GetUserByID(ctx context.Context, id string) (*domain.User, err
 
 	u, err := s.users.GetByID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("service:AccountsService.GetUserById: %w", err)
+		return nil, fmt.Errorf("%s.%s: %w", logPrefix, getUserByIDLogPrefix, err)
 	}
 
 	return u, nil
@@ -59,7 +66,7 @@ func (s *Service) GetUserByEmail(ctx context.Context, email string) (*domain.Use
 
 	u, err := s.users.GetByEmail(ctx, email)
 	if err != nil {
-		return nil, fmt.Errorf("service:AccountsService.GetUserByEmail: %w", err)
+		return nil, fmt.Errorf("%s.%s: %w", logPrefix, getUserByEmailLogPrefix, err)
 	}
 
 	return u, nil

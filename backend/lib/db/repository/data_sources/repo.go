@@ -13,6 +13,12 @@ import (
 	mysqldialect "github.com/go-jet/jet/v2/mysql"
 )
 
+const (
+	logPrefix             = "repo:DataSource"
+	getAllPrefix          = "GetAll"
+	queryContextLogPrefix = "QueryContext"
+)
+
 type DataSource struct {
 	db db.DBTX
 }
@@ -28,12 +34,12 @@ func (r *DataSource) GetAll(ctx context.Context) ([]domain.DataSource, error) {
 		SELECT(table.DataSources.AllColumns).
 		FROM(table.DataSources).
 		ORDER_BY(table.DataSources.ID)
-	repository.LogQuery(ctx, "repo:DataSource.GetAll", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, getAllPrefix), q)
 
 	var rows []model.DataSources
 	err := q.QueryContext(ctx, r.db, &rows)
 	if err != nil {
-		return nil, fmt.Errorf("repo:DataSource.GetAll: QueryContext: %w", dberr.MapError(err))
+		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getAllPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
 	out := make([]domain.DataSource, len(rows))

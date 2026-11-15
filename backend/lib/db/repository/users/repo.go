@@ -14,6 +14,16 @@ import (
 	mysqldialect "github.com/go-jet/jet/v2/mysql"
 )
 
+const (
+	logPrefix             = "repo:User"
+	createLogPrefix       = "Create"
+	getByIDLogPrefix      = "GetByID"
+	getByEmailLogPrefix   = "GetByEmail"
+	updateLogPrefix       = "Update"
+	execContextLogPrefix  = "ExecContext"
+	queryContextLogPrefix = "QueryContext"
+)
+
 var userUniqueKeys = map[string]dberr.UniqueKeyField{
 	"uq_users_email": {Field: "email", Reason: domain.ErrUserEmailTaken},
 	"uq_users_pan":   {Field: "pan", Reason: domain.ErrUserPANTaken},
@@ -49,10 +59,10 @@ func (r *User) Create(ctx context.Context, u *domain.User) error {
 	row.Version, row.CreatedAt, row.UpdatedAt = 1, now, now
 
 	q := table.Users.INSERT(table.Users.AllColumns).MODEL(row)
-	repository.LogQuery(ctx, "repo:User.Create", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, createLogPrefix), q)
 
 	if _, err := q.ExecContext(ctx, r.db); err != nil {
-		return fmt.Errorf("repo:User.Create: ExecContext: %w", dberr.MapWriteError(err, userUniqueKeys))
+		return fmt.Errorf("%s.%s: %s: %w", logPrefix, createLogPrefix, execContextLogPrefix, dberr.MapWriteError(err, userUniqueKeys))
 	}
 
 	u.Version, u.CreatedAt, u.UpdatedAt = 1, now, now
@@ -64,12 +74,12 @@ func (r *User) GetByID(ctx context.Context, userID domain.ID) (*domain.User, err
 		SELECT(table.Users.AllColumns).
 		FROM(table.Users).
 		WHERE(table.Users.ID.EQ(mysqldialect.Blob(userID.Binary())))
-	repository.LogQuery(ctx, "repo:User.GetByID", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, getByIDLogPrefix), q)
 
 	var out model.Users
 	err := q.QueryContext(ctx, r.db, &out)
 	if err != nil {
-		return nil, fmt.Errorf("repo:User.GetByID: QueryContext: %w", dberr.MapError(err))
+		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getByIDLogPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
 	return ToUserDomain(&out), nil
@@ -80,12 +90,12 @@ func (r *User) GetByEmail(ctx context.Context, userEmail string) (*domain.User, 
 		SELECT(table.Users.AllColumns).
 		FROM(table.Users).
 		WHERE(table.Users.Email.EQ(mysqldialect.String(domain.NormalizeEmail(userEmail))))
-	repository.LogQuery(ctx, "repo:User.GetByEmail", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, getByEmailLogPrefix), q)
 
 	var out model.Users
 	err := q.QueryContext(ctx, r.db, &out)
 	if err != nil {
-		return nil, fmt.Errorf("repo:User.GetByEmail: QueryContext: %w", dberr.MapError(err))
+		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getByEmailLogPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
 	return ToUserDomain(&out), nil
@@ -115,16 +125,16 @@ func (r *User) Update(ctx context.Context, u *domain.User) error {
 			table.Users.ID.EQ(mysqldialect.Blob(row.ID.Binary())).
 				AND(table.Users.Version.EQ(mysqldialect.Uint32(u.Version))),
 		)
-	repository.LogQuery(ctx, "repo:User.Update", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, updateLogPrefix), q)
 
 	res, err := q.ExecContext(ctx, r.db)
 	if err != nil {
-		return fmt.Errorf("repo:User.Update: ExecContext: %w", dberr.MapWriteError(err, userUniqueKeys))
+		return fmt.Errorf("%s.%s: %s: %w", logPrefix, updateLogPrefix, execContextLogPrefix, dberr.MapWriteError(err, userUniqueKeys))
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("repo:User.Update: RowsAffected: %w", dberr.MapError(err))
+		return fmt.Errorf("%s.%s: RowsAffected: %w", logPrefix, updateLogPrefix, dberr.MapError(err))
 	}
 	if n == 0 {
 		// Either the row is gone or its version moved on; tell the two apart.
@@ -133,12 +143,12 @@ func (r *User) Update(ctx context.Context, u *domain.User) error {
 			SELECT(table.Users.Version).
 			FROM(table.Users).
 			WHERE(table.Users.ID.EQ(mysqldialect.Blob(row.ID.Binary())))
-		repository.LogQuery(ctx, "repo:User.Update", q)
+		repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, updateLogPrefix), q)
 
 		if err := q.QueryContext(ctx, r.db, &cur); err != nil {
-			return fmt.Errorf("repo:User.Update: QueryContext: %w", dberr.MapError(err)) // ErrNotFound if gone
+			return fmt.Errorf("%s.%s: %s: %w", logPrefix, updateLogPrefix, queryContextLogPrefix, dberr.MapError(err)) // ErrNotFound if gone
 		}
-		return fmt.Errorf("repo:User.Update: %w", apperr.ErrConflict)
+		return fmt.Errorf("%s.%s: %w", logPrefix, updateLogPrefix, apperr.ErrConflict)
 	}
 
 	u.Version++

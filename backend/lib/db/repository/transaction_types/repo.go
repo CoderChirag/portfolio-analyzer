@@ -13,6 +13,12 @@ import (
 	mysqldialect "github.com/go-jet/jet/v2/mysql"
 )
 
+const (
+	logPrefix             = "repo:TransactionType"
+	getAllPrefix          = "GetAll"
+	queryContextLogPrefix = "QueryContext"
+)
+
 type TransactionType struct {
 	db db.DBTX
 }
@@ -28,12 +34,12 @@ func (r *TransactionType) GetAll(ctx context.Context) ([]domain.TransactionType,
 		SELECT(table.TransactionTypes.AllColumns).
 		FROM(table.TransactionTypes).
 		ORDER_BY(table.TransactionTypes.ID)
-	repository.LogQuery(ctx, "repo:TransactionType.GetAll", q)
+	repository.LogQuery(ctx, fmt.Sprintf("%s.%s", logPrefix, getAllPrefix), q)
 
 	var rows []model.TransactionTypes
 	err := q.QueryContext(ctx, r.db, &rows)
 	if err != nil {
-		return nil, fmt.Errorf("repo:TransactionType.GetAll: QueryContext: %w", dberr.MapError(err))
+		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getAllPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
 	out := make([]domain.TransactionType, len(rows))
