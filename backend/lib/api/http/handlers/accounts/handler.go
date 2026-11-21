@@ -4,6 +4,7 @@ import (
 	httpauthmiddleware "coderchirag/folio-tracker/lib/api/http/middlewares/auth"
 	httpresponse "coderchirag/folio-tracker/lib/api/http/response"
 	"coderchirag/folio-tracker/lib/apperr"
+	"coderchirag/folio-tracker/lib/domain"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -41,8 +42,9 @@ func (h *HTTPHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // Gets user by the id provided in URL Params.
 func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	userID := r.Context().Value(httpauthmiddleware.UserIDKey)
-	if userID != id {
+	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
+	userID, ok := uid.(domain.ID)
+	if !ok || userID.String() != id {
 		httpresponse.JSONError(w, r, httpresponse.ErrForbidden, classifyErrors)
 		return
 	}
@@ -74,8 +76,9 @@ func (h *HTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := r.Context().Value(httpauthmiddleware.UserIDKey)
-	if userID != u.ID.String() {
+	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
+	userID, ok := uid.(domain.ID)
+	if !ok || userID.String() != u.ID.String() {
 		httpresponse.JSONError(w, r, httpresponse.ErrForbidden, classifyErrors)
 		return
 	}
