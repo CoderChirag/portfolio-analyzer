@@ -29,7 +29,7 @@ func (j *JSON) Scan(src any) error {
 	case string:
 		*j = JSON(v)
 	default:
-		return fmt.Errorf("models.types.JSON: cannot scan %T", src)
+		return fmt.Errorf("domain:JSON: cannot scan %T", src)
 	}
 	return nil
 }
