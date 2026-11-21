@@ -1,9 +1,9 @@
 package api
 
 import (
-	"coderchirag/folio-tracker/lib/api/middlewares/auth"
-	"coderchirag/folio-tracker/lib/api/middlewares/responsewriter"
-	"coderchirag/folio-tracker/lib/api/response"
+	httpauthmiddleware "coderchirag/folio-tracker/lib/api/http/middlewares/auth"
+	httpresponsewriter "coderchirag/folio-tracker/lib/api/http/middlewares/responsewriter"
+	httpresponse "coderchirag/folio-tracker/lib/api/http/response"
 	"coderchirag/folio-tracker/lib/apperr"
 	"net/http"
 
@@ -15,13 +15,13 @@ func registerRoutes(r *chi.Mux, handlers handlerStore) {
 	r.Use(
 		middleware.RequestID,
 		middleware.Logger,
-		responsewriter.ResponseWriter,
+		httpresponsewriter.ResponseWriter,
 		middleware.Recoverer,
 	)
 
 	// Accounts
 	r.Post("/signup", handlers.Accounts.SignUp)
-	r.With(auth.Auth).Route("/users", func(r chi.Router) {
+	r.With(httpauthmiddleware.Auth).Route("/users", func(r chi.Router) {
 		// Get User By Email.
 		r.Get("/", handlers.Accounts.GetUser)
 
@@ -31,9 +31,9 @@ func registerRoutes(r *chi.Mux, handlers handlerStore) {
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		response.JSONError(w, r, apperr.ErrNotFound, nil)
+		httpresponse.JSONError(w, r, apperr.ErrNotFound, nil)
 	})
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		response.JSONError(w, r, response.ErrMethodNotAllowed, nil)
+		httpresponse.JSONError(w, r, httpresponse.ErrMethodNotAllowed, nil)
 	})
 }

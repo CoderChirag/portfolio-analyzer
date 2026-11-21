@@ -1,4 +1,4 @@
-package response
+package httpresponse
 
 import (
 	"coderchirag/folio-tracker/lib/apperr"
@@ -82,6 +82,16 @@ func Classify(err error) (int, *ErrorBody) {
 		return http.StatusRequestEntityTooLarge, &ErrorBody{
 			Code: "ENTITY_TOO_LARGE",
 			Msg:  ErrEntityTooLarge.Error(),
+		}
+	case errors.Is(err, apperr.ErrFileTooLarge):
+		return http.StatusRequestEntityTooLarge, &ErrorBody{
+			Code: "FILE_TOO_LARGE",
+			Msg:  apperr.ErrFileTooLarge.Error(),
+		}
+	case errors.Is(err, &http.MaxBytesError{}):
+		return http.StatusRequestEntityTooLarge, &ErrorBody{
+			Code: "FILE_TOO_LARGE",
+			Msg:  apperr.ErrFileTooLarge.Error(),
 		}
 	case errors.As(err, &verrs):
 		fields := make([]fieldError, 0, len(verrs))

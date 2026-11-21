@@ -1,7 +1,7 @@
-package auth
+package httpauthmiddleware
 
 import (
-	"coderchirag/folio-tracker/lib/api/response"
+	httpresponse "coderchirag/folio-tracker/lib/api/http/response"
 	"context"
 	"net/http"
 )
@@ -15,7 +15,7 @@ func Auth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		userID := r.Header.Get("X-Auth-Token")
 		if userID == "" {
-			response.JSONError(w, r, ErrMissingXAuthToken, classifyErrors)
+			httpresponse.JSONError(w, r, ErrMissingXAuthToken, classifyErrors)
 			return
 		}
 		ctx = context.WithValue(ctx, UserIDKey, userID)

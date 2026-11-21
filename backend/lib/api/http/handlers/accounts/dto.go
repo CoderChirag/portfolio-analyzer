@@ -1,8 +1,7 @@
-package accountshandler
+package httpaccountshandler
 
 import (
 	"coderchirag/folio-tracker/lib/domain"
-	"coderchirag/folio-tracker/lib/service/accounts"
 )
 
 type SignUpBody struct {
@@ -11,8 +10,8 @@ type SignUpBody struct {
 	PAN   string `json:"pan"`
 }
 
-func (b SignUpBody) ToSignUpSvcInput() *accounts.SignUpInput {
-	return &accounts.SignUpInput{
+func (b SignUpBody) ToSignUpSvcInput() *domain.UserParams {
+	return &domain.UserParams{
 		Name:  b.Name,
 		Email: b.Email,
 		PAN:   b.PAN,

@@ -1,4 +1,4 @@
-package responsewriter
+package httpresponsewriter
 
 import (
 	"log/slog"

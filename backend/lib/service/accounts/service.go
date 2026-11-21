@@ -24,7 +24,7 @@ func New(users UserStore) *Service {
 	}
 }
 
-func (s *Service) SignUp(ctx context.Context, in *SignUpInput) (*domain.User, error) {
+func (s *Service) SignUp(ctx context.Context, in *domain.UserParams) (*domain.User, error) {
 	u, err := domain.NewUser(domain.UserParams{
 		Name:  in.Name,
 		Email: in.Email,

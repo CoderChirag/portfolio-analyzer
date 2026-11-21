@@ -1,7 +1,7 @@
 package api
 
 import (
-	accountshandler "coderchirag/folio-tracker/lib/api/handlers/accounts"
+	httpaccountshandler "coderchirag/folio-tracker/lib/api/http/handlers/accounts"
 	"coderchirag/folio-tracker/lib/db"
 	assettypes "coderchirag/folio-tracker/lib/db/repository/asset_types"
 	datasources "coderchirag/folio-tracker/lib/db/repository/data_sources"
@@ -24,7 +24,7 @@ type svcStore struct {
 }
 
 type handlerStore struct {
-	Accounts *accountshandler.Handler
+	Accounts *httpaccountshandler.HTTPHandler
 }
 
 func getRepos(db db.DBTX, clock db.Clock) *repoStore {
@@ -53,6 +53,6 @@ func getServices(repos *repoStore) *svcStore {
 
 func getHandlers(services *svcStore) *handlerStore {
 	return &handlerStore{
-		Accounts: accountshandler.New(services.Accounts),
+		Accounts: httpaccountshandler.New(services.Accounts),
 	}
 }
