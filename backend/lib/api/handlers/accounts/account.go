@@ -35,8 +35,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", "/users/"+u.ID.String())
-	response.JSON(w, http.StatusCreated, User{}.FromDomain(u))
+	response.JSON(w, http.StatusCreated, (&User{}).FromDomain(u))
 }
 
 // Gets user by the id provided in URL Params.
@@ -44,7 +43,7 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	userID := r.Context().Value(auth.UserIDKey)
 	if userID != id {
-		response.JSONError(w, r, ErrUserForbidden, classifyErrors)
+		response.JSONError(w, r, response.ErrForbidden, classifyErrors)
 		return
 	}
 
@@ -54,7 +53,7 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, http.StatusOK, User{}.FromDomain(u))
+	response.JSON(w, http.StatusOK, (&User{}).FromDomain(u))
 }
 
 // Gets User. Needs email in query params.
@@ -77,9 +76,9 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	userID := r.Context().Value(auth.UserIDKey)
 	if userID != u.ID.String() {
-		response.JSONError(w, r, ErrUserForbidden, classifyErrors)
+		response.JSONError(w, r, response.ErrForbidden, classifyErrors)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, User{}.FromDomain(u))
+	response.JSON(w, http.StatusOK, (&User{}).FromDomain(u))
 }

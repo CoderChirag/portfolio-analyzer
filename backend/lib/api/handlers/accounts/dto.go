@@ -26,7 +26,7 @@ type User struct {
 	PAN   string `json:"pan"`
 }
 
-func (u User) FromDomain(d *domain.User) User {
+func (u *User) FromDomain(d *domain.User) *User {
 	u.ID = d.ID.String()
 	u.Name = d.Name
 	u.Email = d.Email
