@@ -26,13 +26,13 @@ func New(svc AccountService) *HTTPHandler {
 func (h *HTTPHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var body SignUpBody
 	if err := httpresponse.DecodeJSON(w, r, &body, maxBodyBytes); err != nil {
-		httpresponse.JSONError(w, r, err, nil)
+		httpresponse.JSONError(w, r, err)
 		return
 	}
 
 	u, err := h.svc.SignUp(r.Context(), body.ToSignUpSvcInput())
 	if err != nil {
-		httpresponse.JSONError(w, r, err, classifyErrors)
+		httpresponse.JSONError(w, r, err)
 		return
 	}
 
@@ -45,13 +45,13 @@ func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
 	userID, ok := uid.(domain.ID)
 	if !ok || userID.String() != id {
-		httpresponse.JSONError(w, r, httpresponse.ErrForbidden, classifyErrors)
+		httpresponse.JSONError(w, r, httpresponse.ErrForbidden)
 		return
 	}
 
 	u, err := h.svc.GetUserByID(r.Context(), id)
 	if err != nil {
-		httpresponse.JSONError(w, r, err, classifyErrors)
+		httpresponse.JSONError(w, r, err)
 		return
 	}
 
@@ -66,20 +66,20 @@ func (h *HTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if email == "" {
 		var errs apperr.ValidationError
 		errs.Add("email", ErrEmailRequired)
-		httpresponse.JSONError(w, r, errs, classifyErrors)
+		httpresponse.JSONError(w, r, errs)
 		return
 	}
 
 	u, err := h.svc.GetUserByEmail(r.Context(), email)
 	if err != nil {
-		httpresponse.JSONError(w, r, err, classifyErrors)
+		httpresponse.JSONError(w, r, err)
 		return
 	}
 
 	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
 	userID, ok := uid.(domain.ID)
 	if !ok || userID.String() != u.ID.String() {
-		httpresponse.JSONError(w, r, httpresponse.ErrForbidden, classifyErrors)
+		httpresponse.JSONError(w, r, httpresponse.ErrForbidden)
 		return
 	}
 
