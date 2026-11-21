@@ -33,7 +33,7 @@ var columnTypes = map[string]any{
 	"instrument_listings.exchange": domain.Exchange(""),
 	"stock_trade_details.exchange": domain.Exchange(""),
 
-	"imports.kind":              domain.ImportKind(""),
+	"imports.kind":              &domain.ImportKind{},
 	"imports.status":            domain.ImportStatus(""),
 	"import_files.content_type": domain.ContentType(""),
 	"jobs.job_type":             domain.JobType(""),

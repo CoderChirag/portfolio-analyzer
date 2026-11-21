@@ -16,7 +16,7 @@ type Imports struct {
 	ID            domain.ID `sql:"primary_key"`
 	UserID        domain.ID
 	DataSourceID  domain.DataSourceID
-	Kind          domain.ImportKind
+	Kind          *domain.ImportKind
 	FileName      string
 	FileSize      uint32
 	FileSha256    []byte

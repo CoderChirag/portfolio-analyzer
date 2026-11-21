@@ -6,7 +6,6 @@ import (
 	"coderchirag/folio-tracker/lib/utils"
 	"crypto/sha256"
 	"errors"
-	"regexp"
 	"time"
 )
 
@@ -29,8 +28,8 @@ const importContentTypeMaxLen = 255 // VARCHAR(255) ascii
 type ContentType string
 
 const (
-	ContentTypeCSV  = "text/csv"
-	ContentTypeXLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	ContentTypeCSV  ContentType = "text/csv"
+	ContentTypeXLSX ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
 func (c ContentType) IsValid() bool {
@@ -42,28 +41,25 @@ func (c ContentType) IsValid() bool {
 }
 
 var (
-	ErrImportFileImportRequired = errors.New("import is required")
-	ErrImportFileContentType    = errors.New("content type must be a media type like text/csv")
-	ErrImportFileMismatch       = errors.New("file content does not match the import's size and hash")
+	ErrImportFileImportRequired          = errors.New("import is required")
+	ErrImportFileContentTypeNotSupported = errors.New("content type not supported")
+	ErrImportFileMismatch                = errors.New("file content does not match the import's size and hash")
 )
 
 // ImportFile holds an import's uploaded bytes, 1:1 with imports.
 // Kept apart so status polls and history lists never read the blob.
 type ImportFile struct {
 	ImportID    ID
-	ContentType string
+	ContentType ContentType
 	Content     []byte
 	CreatedAt   time.Time
 }
 
 type ImportFileParams struct {
 	Import      *Import
-	ContentType string // detected by the server from the bytes, not the client's header
+	ContentType ContentType // detected by the server from the bytes, not the client's header
 	Content     []byte
 }
-
-// RFC 6838 type/subtype characters, lowercase.
-var mediaTypePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*$`)
 
 // NewImportFile normalizes the media type and checks the bytes are the ones the import describes.
 // On failure it returns apperr.ValidationError listing every invalid field.
@@ -76,7 +72,7 @@ func NewImportFile(p ImportFileParams) (*ImportFile, error) {
 
 	f := &ImportFile{
 		ImportID:    p.Import.ID,
-		ContentType: utils.NormalizeMediaType(p.ContentType),
+		ContentType: ContentType(utils.NormalizeMediaType(string(p.ContentType))),
 		Content:     p.Content,
 	}
 
@@ -95,8 +91,8 @@ func (f *ImportFile) Validate(imp *Import) error {
 		errs.Add("import", ErrImportFileImportRequired)
 	}
 
-	if len(f.ContentType) > importContentTypeMaxLen || !mediaTypePattern.MatchString(f.ContentType) {
-		errs.Add("contentType", ErrImportFileContentType)
+	if len(f.ContentType) > importContentTypeMaxLen || !f.ContentType.IsValid() {
+		errs.Add("contentType", ErrImportFileContentTypeNotSupported)
 	}
 
 	if imp != nil {

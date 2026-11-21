@@ -4,7 +4,9 @@ import (
 	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
 	"crypto/sha256"
+	"database/sql/driver"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -20,19 +22,68 @@ const (
 )
 
 // ImportKind picks the parser for a file. One data source can export several kinds.
-type ImportKind string
+type ImportKind struct {
+	datasource DataSourceCode
+	assetType  AssetTypeCode
+	importKind string
+}
 
-const (
-	ImportGrowwStockOrders ImportKind = "groww_stock_orders"
-)
+func (k *ImportKind) DataSource() DataSourceCode {
+	return k.datasource
+}
 
-func (k ImportKind) IsValid() bool {
-	switch k {
-	case ImportGrowwStockOrders:
+func (k *ImportKind) AssetType() AssetTypeCode {
+	return k.assetType
+}
+
+func (k *ImportKind) String() string {
+	return k.importKind
+}
+
+func (k *ImportKind) Value() (driver.Value, error) {
+	if !k.IsValid() {
+		return "", ErrImportKindInvalid
+	}
+	return k.String(), nil
+}
+
+func (k *ImportKind) Scan(src any) error {
+	importKind, ok := src.(string)
+	if !ok {
+		return ErrImportKindInvalid
+	}
+	switch importKind {
+	case ImportGrowwStockOrders.String():
+		k.datasource = ImportGrowwStockOrders.datasource
+		k.assetType = ImportGrowwStockOrders.assetType
+		k.importKind = importKind
+	default:
+		return ErrImportKindInvalid
+	}
+	return nil
+}
+
+func (k *ImportKind) IsValid() bool {
+	switch k.importKind {
+	case ImportGrowwStockOrders.importKind:
+		if k.datasource != SourceGroww || k.assetType != AssetStock {
+			return false
+		}
 		return true
 	}
 	return false
 }
+
+var (
+	ImportGrowwStockOrders = &ImportKind{
+		datasource: SourceGroww,
+		assetType:  AssetStock,
+		importKind: fmt.Sprintf("%s_%s_orders",
+			string(SourceGroww),
+			strings.ToLower(string(AssetStock)),
+		),
+	}
+)
 
 type ImportStatus string
 
@@ -83,7 +134,7 @@ type Import struct {
 	ID            ID
 	UserID        ID
 	DataSourceID  DataSourceID
-	Kind          ImportKind
+	Kind          *ImportKind
 	FileName      string
 	FileSize      uint32
 	FileSHA256    []byte
@@ -104,7 +155,7 @@ type Import struct {
 type ImportParams struct {
 	UserID       ID
 	DataSourceID DataSourceID
-	Kind         ImportKind
+	Kind         *ImportKind
 	FileName     string // as sent by the client; any directory part is dropped
 	Content      []byte // size and hash are computed from it, so they can't disagree
 }
