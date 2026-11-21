@@ -31,9 +31,9 @@ func registerRoutes(r *chi.Mux, handlers handlerStore) {
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		httpresponse.JSONError(w, r, apperr.ErrNotFound, nil)
+		httpresponse.JSONError(w, r, apperr.ErrNotFound)
 	})
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		httpresponse.JSONError(w, r, httpresponse.ErrMethodNotAllowed, nil)
+		httpresponse.JSONError(w, r, httpresponse.ErrMethodNotAllowed)
 	})
 }

@@ -26,32 +26,14 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any, maxbytes int64)
 	return nil
 }
 
-// Wrapper over r.ParseMultipartForm.
-// Parses multipart form (files > maxFileSizeInMemoryBytes spill to temp disk automatically).
-// Writes 400 json error response if parsing error occur
-func ParseMultipartForm(w http.ResponseWriter, r *http.Request, maxMemory int64) error {
-	// Parse multipart form (files > maxFileSizeInMemoryBytes spill to temp disk automatically)
-	if err := r.ParseMultipartForm(maxMemory); err != nil {
-		JSONError(w, r, ErrMultipartParse, Classify)
-		return err
-	}
-	return nil
-}
-
 func JSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]any{"success": true, "data": data})
 }
 
-func JSONError(w http.ResponseWriter, r *http.Request, err error, classifyFunc func(error) (int, *ErrorBody)) {
-	var status int
-	var body *ErrorBody
-	if classifyFunc != nil {
-		status, body = classifyFunc(err)
-	} else {
-		status, body = Classify(err)
-	}
+func JSONError(w http.ResponseWriter, r *http.Request, err error) {
+	status, body := classify(err)
 
 	if status >= 500 || slog.Default().Enabled(r.Context(), slog.LevelDebug) {
 		slog.ErrorContext(r.Context(), "request failed",
