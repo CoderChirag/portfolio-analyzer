@@ -49,7 +49,7 @@ var panPattern = regexp.MustCompile("^[A-Z]{5}[0-9]{4}[A-Z]$")
 
 // NewUser normalizes and validates input and assigns a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewUser(p UserParams) (*User, error) {
+func NewUser(p *UserParams) (*User, error) {
 	user := &User{
 		ID:    NewID(),
 		Name:  strings.TrimSpace(p.Name),

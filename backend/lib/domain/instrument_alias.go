@@ -41,7 +41,7 @@ type InstrumentAliasParams struct {
 	InstrumentID ID
 }
 
-func NewInstrumentAlias(p InstrumentAliasParams) (*InstrumentAlias, error) {
+func NewInstrumentAlias(p *InstrumentAliasParams) (*InstrumentAlias, error) {
 	canonical := strings.TrimSpace(p.Alias)
 	a := &InstrumentAlias{
 		ID:              NewID(),

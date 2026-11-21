@@ -111,7 +111,7 @@ var (
 
 // NewJob validates input and returns a queued job with a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewJob(p JobParams) (*Job, error) {
+func NewJob(p *JobParams) (*Job, error) {
 	payload, err := json.Marshal(p.Payload)
 	if err != nil {
 		var errs apperr.ValidationError
@@ -204,7 +204,7 @@ func NewImportJob(imp *Import, now time.Time) (*Job, error) {
 		return nil, errs.Err()
 	}
 	userID := imp.UserID
-	return NewJob(JobParams{
+	return NewJob(&JobParams{
 		Type:        JobImportProcess,
 		Payload:     ImportJobPayload{ImportID: imp.ID},
 		DedupeKey:   string(JobImportProcess) + ":" + imp.ID.String(),

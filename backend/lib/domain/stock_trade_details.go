@@ -44,7 +44,7 @@ var exchangeOrderIDPattern = regexp.MustCompile(`^[A-Za-z0-9]+$`)
 
 // NewStockTradeDetails normalizes and validates input.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewStockTradeDetails(p StockTradeDetailsParams) (*StockTradeDetails, error) {
+func NewStockTradeDetails(p *StockTradeDetailsParams) (*StockTradeDetails, error) {
 	if p.Transaction == nil {
 		var errs apperr.ValidationError
 		errs.Add("transaction", ErrStockTradeTransactionRequired)

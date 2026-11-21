@@ -37,7 +37,7 @@ type MutualFundDetailsParams struct {
 
 // NewMutualFundDetails normalizes and validates input.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewMutualFundDetails(p MutualFundDetailsParams) (*MutualFundDetails, error) {
+func NewMutualFundDetails(p *MutualFundDetailsParams) (*MutualFundDetails, error) {
 	if p.Instrument == nil {
 		var errs apperr.ValidationError
 		errs.Add("instrument", ErrMFDetailsInstrumentRequired)

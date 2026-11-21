@@ -74,7 +74,7 @@ var currencyPattern = regexp.MustCompile(`^[A-Z]{3}$`)
 
 // NewTransaction normalizes and validates input and assigns a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewTransaction(p TransactionParams) (*Transaction, error) {
+func NewTransaction(p *TransactionParams) (*Transaction, error) {
 	if p.Instrument == nil {
 		var errs apperr.ValidationError
 		errs.Add("instrument", ErrTxnInstrumentRequired)

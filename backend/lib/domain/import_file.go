@@ -63,7 +63,7 @@ type ImportFileParams struct {
 
 // NewImportFile normalizes the media type and checks the bytes are the ones the import describes.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewImportFile(p ImportFileParams) (*ImportFile, error) {
+func NewImportFile(p *ImportFileParams) (*ImportFile, error) {
 	if p.Import == nil {
 		var errs apperr.ValidationError
 		errs.Add("import", ErrImportFileImportRequired)

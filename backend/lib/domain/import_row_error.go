@@ -56,7 +56,7 @@ type ImportRowErrorParams struct {
 
 // NewImportRowError normalizes and validates input and assigns a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewImportRowError(p ImportRowErrorParams) (*ImportRowError, error) {
+func NewImportRowError(p *ImportRowErrorParams) (*ImportRowError, error) {
 	e := &ImportRowError{
 		ID:         NewID(),
 		ImportID:   p.ImportID,

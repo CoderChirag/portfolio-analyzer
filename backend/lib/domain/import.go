@@ -164,7 +164,7 @@ var errorCodePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 
 // NewImport normalizes and validates input, assigns a fresh ID and starts it as queued.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewImport(p ImportParams) (*Import, error) {
+func NewImport(p *ImportParams) (*Import, error) {
 	if len(p.Content) > MaxImportFileSize {
 		var errs apperr.ValidationError
 		errs.Add("file", ErrImportFileTooLarge)

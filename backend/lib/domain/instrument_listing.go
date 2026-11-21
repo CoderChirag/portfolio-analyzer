@@ -57,7 +57,7 @@ var symbolPattern = regexp.MustCompile(`^[A-Z0-9&_-]+$`)
 
 // NewInstrumentListing normalizes and validates input and assigns a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewInstrumentListing(p InstrumentListingParams) (*InstrumentListing, error) {
+func NewInstrumentListing(p *InstrumentListingParams) (*InstrumentListing, error) {
 	if p.Instrument == nil {
 		var errs apperr.ValidationError
 		errs.Add("instrument", ErrListingInstrumentRequired)

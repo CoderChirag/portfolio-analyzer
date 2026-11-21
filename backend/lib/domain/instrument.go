@@ -42,7 +42,7 @@ var isinPattern = regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{9}[0-9]$`)
 
 // NewInstrument normalizes and validates input and assigns a fresh ID.
 // On failure it returns apperr.ValidationError listing every invalid field.
-func NewInstrument(p InstrumentParams) (*Instrument, error) {
+func NewInstrument(p *InstrumentParams) (*Instrument, error) {
 	i := &Instrument{
 		ID:          NewID(),
 		AssetTypeID: p.AssetType.ID,
