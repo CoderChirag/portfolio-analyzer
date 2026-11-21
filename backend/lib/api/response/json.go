@@ -52,11 +52,13 @@ func JSONError(w http.ResponseWriter, r *http.Request, err error, classifyFunc f
 	} else {
 		status, body = Classify(err)
 	}
-	if status >= 500 {
+
+	if status >= 500 || slog.Default().Enabled(r.Context(), slog.LevelDebug) {
 		slog.ErrorContext(r.Context(), "request failed",
 			"request_id", middleware.GetReqID(r.Context()),
 			"method", r.Method, "path", r.URL.Path, "err", err)
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(body)
