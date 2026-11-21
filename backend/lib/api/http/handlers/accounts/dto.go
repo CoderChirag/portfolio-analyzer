@@ -18,14 +18,14 @@ func (b SignUpBody) ToSignUpSvcInput() *domain.UserParams {
 	}
 }
 
-type User struct {
+type UserResponse struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	PAN   string `json:"pan"`
 }
 
-func (u *User) FromDomain(d *domain.User) *User {
+func (u *UserResponse) FromDomain(d *domain.User) *UserResponse {
 	u.ID = d.ID.String()
 	u.Name = d.Name
 	u.Email = d.Email

@@ -35,7 +35,7 @@ func (h *HTTPHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusCreated, (&User{}).FromDomain(u))
+	httpresponse.JSON(w, http.StatusCreated, (&UserResponse{}).FromDomain(u))
 }
 
 // Gets user by the id provided in URL Params.
@@ -53,7 +53,7 @@ func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusOK, (&User{}).FromDomain(u))
+	httpresponse.JSON(w, http.StatusOK, (&UserResponse{}).FromDomain(u))
 }
 
 // Gets User. Needs email in query params.
@@ -80,5 +80,5 @@ func (h *HTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusOK, (&User{}).FromDomain(u))
+	httpresponse.JSON(w, http.StatusOK, (&UserResponse{}).FromDomain(u))
 }
