@@ -1,4 +1,4 @@
-package assettypes
+package assettypesrepo
 
 import (
 	"coderchirag/folio-tracker/lib/db"

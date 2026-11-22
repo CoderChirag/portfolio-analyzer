@@ -1,4 +1,4 @@
-package datasources
+package datasourcesrepo
 
 import (
 	"coderchirag/folio-tracker/lib/db"

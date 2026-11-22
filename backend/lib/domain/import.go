@@ -28,19 +28,19 @@ type ImportKind struct {
 	importKind string
 }
 
-func (k *ImportKind) DataSource() DataSourceCode {
+func (k ImportKind) DataSource() DataSourceCode {
 	return k.datasource
 }
 
-func (k *ImportKind) AssetType() AssetTypeCode {
+func (k ImportKind) AssetType() AssetTypeCode {
 	return k.assetType
 }
 
-func (k *ImportKind) String() string {
+func (k ImportKind) String() string {
 	return k.importKind
 }
 
-func (k *ImportKind) Value() (driver.Value, error) {
+func (k ImportKind) Value() (driver.Value, error) {
 	if !k.IsValid() {
 		return "", ErrImportKindInvalid
 	}
@@ -48,10 +48,16 @@ func (k *ImportKind) Value() (driver.Value, error) {
 }
 
 func (k *ImportKind) Scan(src any) error {
-	importKind, ok := src.(string)
-	if !ok {
-		return ErrImportKindInvalid
+	var importKind string
+	switch s := src.(type) {
+	case string:
+		importKind = s
+	case []byte:
+		importKind = string(s)
+	default:
+		return fmt.Errorf("domain.ImportKind: cannot scan %T", src)
 	}
+
 	switch importKind {
 	case ImportGrowwStockOrders.String():
 		k.datasource = ImportGrowwStockOrders.datasource
@@ -63,7 +69,7 @@ func (k *ImportKind) Scan(src any) error {
 	return nil
 }
 
-func (k *ImportKind) IsValid() bool {
+func (k ImportKind) IsValid() bool {
 	switch k.importKind {
 	case ImportGrowwStockOrders.importKind:
 		if k.datasource != SourceGroww || k.assetType != AssetStock {
@@ -95,6 +101,10 @@ const (
 	ImportFailed              ImportStatus = "failed"
 )
 
+func (s ImportStatus) Value() (driver.Value, error) {
+	return string(s), nil
+}
+
 func (s ImportStatus) IsValid() bool {
 	switch s {
 	case ImportQueued, ImportProcessing, ImportSucceeded, ImportCompletedWithErrors, ImportFailed:
@@ -120,13 +130,13 @@ var (
 	ErrImportFileNameTooLong  = errors.New("file name must be at most 255 characters")
 	ErrImportFileNameInvalid  = errors.New("file name contains invalid characters")
 	ErrImportFileEmpty        = errors.New("file is empty")
-	ErrImportFileTooLarge     = errors.New("file is too large")
 	ErrImportFileHashInvalid  = errors.New("file hash must be a SHA-256 digest")
 	ErrImportStatusInvalid    = errors.New("invalid import status")
 	ErrImportRowsInvalid      = errors.New("processed rows cannot exceed total rows")
 	ErrImportFinishedInvalid  = errors.New("finish time cannot be before start time")
 	ErrImportErrorCodeInvalid = errors.New("error code must be at most 64 characters of A-Z, 0-9 and '_'")
 	ErrImportErrorMsgTooLong  = errors.New("error message must be at most 1024 characters")
+	ErrDuplicateFile          = errors.New("duplicate file")
 )
 
 // Import is one uploaded file and the outcome of processing it.
@@ -134,7 +144,7 @@ type Import struct {
 	ID            ID
 	UserID        ID
 	DataSourceID  DataSourceID
-	Kind          *ImportKind
+	Kind          ImportKind
 	FileName      string
 	FileSize      uint32
 	FileSHA256    []byte
@@ -155,7 +165,7 @@ type Import struct {
 type ImportParams struct {
 	UserID       ID
 	DataSourceID DataSourceID
-	Kind         *ImportKind
+	Kind         ImportKind
 	FileName     string // as sent by the client; any directory part is dropped
 	Content      []byte // size and hash are computed from it, so they can't disagree
 }
@@ -166,9 +176,7 @@ var errorCodePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 // On failure it returns apperr.ValidationError listing every invalid field.
 func NewImport(p *ImportParams) (*Import, error) {
 	if len(p.Content) > MaxImportFileSize {
-		var errs apperr.ValidationError
-		errs.Add("file", ErrImportFileTooLarge)
-		return nil, errs.Err()
+		return nil, apperr.ErrFileTooLarge
 	}
 
 	sum := sha256.Sum256(p.Content)
@@ -218,7 +226,7 @@ func (i *Import) Validate() error {
 	case i.FileSize == 0:
 		errs.Add("file", ErrImportFileEmpty)
 	case i.FileSize > MaxImportFileSize:
-		errs.Add("file", ErrImportFileTooLarge)
+		errs.Add("file", apperr.ErrFileTooLarge)
 	}
 
 	if len(i.FileSHA256) != sha256.Size {

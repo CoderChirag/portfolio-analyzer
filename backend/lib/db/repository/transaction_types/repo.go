@@ -1,4 +1,4 @@
-package transactiontypes
+package transactiontypesrepo
 
 import (
 	"coderchirag/folio-tracker/lib/db"

@@ -35,7 +35,7 @@ func (id ID) Value() (driver.Value, error) {
 func (id *ID) Scan(src any) error {
 	b, ok := src.([]byte)
 	if !ok || len(b) != 16 {
-		return fmt.Errorf("domain:ID: cannot scan %T", src)
+		return fmt.Errorf("domain.ID: cannot scan %T", src)
 	}
 	copy(id[:], b)
 	return nil

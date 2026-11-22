@@ -5,6 +5,7 @@ import (
 	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
 	"crypto/sha256"
+	"database/sql/driver"
 	"errors"
 	"time"
 )
@@ -31,6 +32,10 @@ const (
 	ContentTypeCSV  ContentType = "text/csv"
 	ContentTypeXLSX ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
+func (c ContentType) Value() (driver.Value, error) {
+	return string(c), nil
+}
 
 func (c ContentType) IsValid() bool {
 	switch c {

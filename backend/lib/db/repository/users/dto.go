@@ -1,11 +1,11 @@
-package users
+package usersrepo
 
 import (
 	"coderchirag/folio-tracker/lib/db/repository/internal/jetgen/model"
 	"coderchirag/folio-tracker/lib/domain"
 )
 
-func ToUserModel(d *domain.User) *model.Users {
+func toUserModel(d *domain.User) *model.Users {
 	u := &model.Users{
 		ID:        d.ID,
 		Name:      d.Name,
@@ -22,7 +22,7 @@ func ToUserModel(d *domain.User) *model.Users {
 	return u
 }
 
-func ToUserDomain(m *model.Users) *domain.User {
+func toUserDomain(m *model.Users) *domain.User {
 	u := &domain.User{
 		ID:        m.ID,
 		Name:      m.Name,

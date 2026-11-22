@@ -5,12 +5,15 @@ import (
 )
 
 var (
-	ErrNotFound   = errors.New("not found")
-	ErrConflict   = errors.New("modified by someone else; reload and retry")
-	ErrDuplicate  = errors.New("duplicate")
-	ErrReferenced = errors.New("still referenced by other records")
-	ErrInvalidRef = errors.New("referenced record does not exist")
-	ErrRetryable  = errors.New("transient database error; retry")
+	ErrNotFound        = errors.New("not found")
+	ErrConflict        = errors.New("modified by someone else; reload and retry")
+	ErrDuplicate       = errors.New("duplicate")
+	ErrReferenced      = errors.New("still referenced by other records")
+	ErrInvalidRef      = errors.New("referenced record does not exist")
+	ErrRetryable       = errors.New("transient database error; retry")
+	ErrInvalidFile     = errors.New("invalid file")
+	ErrInvalidFileName = errors.New("invalid file name")
+	ErrFileTooLarge    = errors.New("file is too large")
 )
 
 // DuplicateError is a unique-key violation. errors.Is matches ErrDuplicate

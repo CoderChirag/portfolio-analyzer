@@ -16,4 +16,5 @@ require (
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
+	github.com/thedatashed/xlsxreader v1.2.8 // indirect
 )

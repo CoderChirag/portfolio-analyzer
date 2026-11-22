@@ -114,6 +114,16 @@ func classify(err error) (int, *errorBody) {
 			Code: "UNPROCESSABLE_ENTITY",
 			Msg:  ErrMultipartFormFile.Error(),
 		}
+	case errors.Is(err, apperr.ErrInvalidFile):
+		return http.StatusUnprocessableEntity, &errorBody{
+			Code: "INVALID_FILE",
+			Msg:  apperr.ErrInvalidFile.Error(),
+		}
+	case errors.Is(err, apperr.ErrInvalidFileName):
+		return http.StatusUnprocessableEntity, &errorBody{
+			Code: "INVALID_FILE",
+			Msg:  apperr.ErrInvalidFileName.Error(),
+		}
 	case errors.Is(err, apperr.ErrRetryable):
 		return http.StatusServiceUnavailable, &errorBody{
 			Code: "RETRYABLE",

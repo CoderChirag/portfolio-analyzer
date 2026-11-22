@@ -3,6 +3,7 @@ package domain
 import (
 	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/utils"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"regexp"
@@ -25,8 +26,12 @@ const DefaultJobMaxAttempts = 5
 type JobType string
 
 const (
-	JobImportProcess JobType = "import.Process"
+	JobImportProcess JobType = "import.process"
 )
+
+func (j JobType) Value() (driver.Value, error) {
+	return string(j), nil
+}
 
 func (j JobType) IsValid() bool {
 	switch j {
@@ -45,6 +50,10 @@ const (
 	JobFailed    JobStatus = "failed"
 	JobCancelled JobStatus = "cancelled"
 )
+
+func (j JobStatus) Value() (driver.Value, error) {
+	return string(j), nil
+}
 
 func (s JobStatus) IsValid() bool {
 	switch s {
@@ -75,6 +84,7 @@ var (
 	ErrJobLockedByTooLong   = errors.New("locked by must be at most 128 characters")
 	ErrJobLastErrorTooLong  = errors.New("last error must be at most 2048 characters")
 	ErrJobImportRequired    = errors.New("import is required")
+	ErrDuplicateJob         = errors.New("duplicate job")
 )
 
 // Job is one unit of background work. Its business outcome lives elsewhere (e.g. imports).

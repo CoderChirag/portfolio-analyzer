@@ -1,4 +1,4 @@
-package users
+package usersrepo
 
 import (
 	"coderchirag/folio-tracker/lib/apperr"
@@ -55,7 +55,7 @@ func (r *User) Create(ctx context.Context, u *domain.User) error {
 	}
 
 	now := r.now()
-	row := ToUserModel(u)
+	row := toUserModel(u)
 	row.Version, row.CreatedAt, row.UpdatedAt = 1, now, now
 
 	q := table.Users.INSERT(table.Users.AllColumns).MODEL(row)
@@ -82,7 +82,7 @@ func (r *User) GetByID(ctx context.Context, userID domain.ID) (*domain.User, err
 		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getByIDLogPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
-	return ToUserDomain(&out), nil
+	return toUserDomain(&out), nil
 }
 
 func (r *User) GetByEmail(ctx context.Context, userEmail string) (*domain.User, error) {
@@ -98,7 +98,7 @@ func (r *User) GetByEmail(ctx context.Context, userEmail string) (*domain.User, 
 		return nil, fmt.Errorf("%s.%s: %s: %w", logPrefix, getByEmailLogPrefix, queryContextLogPrefix, dberr.MapError(err))
 	}
 
-	return ToUserDomain(&out), nil
+	return toUserDomain(&out), nil
 }
 
 // Update saves name, email and PAN if nobody changed the row since u was read.
@@ -108,7 +108,7 @@ func (r *User) Update(ctx context.Context, u *domain.User) error {
 		return err
 	}
 
-	row := ToUserModel(u)
+	row := toUserModel(u)
 	now := r.now()
 	row.UpdatedAt = now
 	row.Version = u.Version + 1

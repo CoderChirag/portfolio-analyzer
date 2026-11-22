@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"bytes"
+	"coderchirag/folio-tracker/lib/apperr"
+	"io"
 	"mime"
 	"path"
 	"strings"
@@ -26,4 +29,23 @@ func NormalizeMediaType(ct string) string {
 		return strings.ToLower(strings.TrimSpace(ct))
 	}
 	return mt
+}
+
+// readLimited streams r into a single buffer,
+// sized up front so it doesn't keep growing and copying.
+func ReadLimited(r io.Reader, limit, sizeHint int64) ([]byte, error) {
+	var buf bytes.Buffer
+	if sizeHint > 0 {
+		// The +1 matches the LimitReader below, and MinRead covers the free space
+		// ReadFrom requires before each read; without it, the final read would double the buffer.
+		buf.Grow(int(min(sizeHint, limit+1)) + bytes.MinRead)
+	}
+	n, err := buf.ReadFrom(io.LimitReader(r, limit+1))
+	if err != nil {
+		return nil, err
+	}
+	if n > limit {
+		return nil, apperr.ErrFileTooLarge
+	}
+	return buf.Bytes(), nil
 }

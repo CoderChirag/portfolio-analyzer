@@ -2,10 +2,20 @@ package domain
 
 import (
 	"coderchirag/folio-tracker/lib/lookup"
+	"database/sql/driver"
+	"errors"
 	"time"
 )
 
+var (
+	ErrInvalidDataSource = errors.New("invalid data source")
+)
+
 type DataSourceID uint16
+
+func (d DataSourceID) Value() (driver.Value, error) {
+	return int64(d), nil
+}
 
 // IsZero reports whether id is the zero value (never assigned).
 func (d DataSourceID) IsZero() bool {

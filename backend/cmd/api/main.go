@@ -4,7 +4,6 @@ import (
 	"coderchirag/folio-tracker/lib/config"
 	"coderchirag/folio-tracker/lib/db"
 	"coderchirag/folio-tracker/lib/db/repository"
-	"coderchirag/folio-tracker/lib/registry"
 	"context"
 	"errors"
 	"fmt"
@@ -36,14 +35,12 @@ func Main() {
 	verifyDB(sqlDB)
 
 	repository.UseSchema("")
-	repos := getRepos(sqlDB, db.SystemClock)
-	services := getServices(repos)
-	handlers := getHandlers(services)
 
-	_, err = registry.Load(ctx, getRegistryLoadParams(repos)) // To be used later when Handler is implemented
-	if err != nil {
-		fatal("registry load", err)
-	}
+	repos := getRepos(sqlDB, db.SystemClock)
+	registry := getRegistries(ctx, repos)
+
+	services := getServices(sqlDB, repos)
+	handlers := getHandlers(registry, services)
 
 	r := chi.NewRouter()
 	registerRoutes(r, *handlers)
