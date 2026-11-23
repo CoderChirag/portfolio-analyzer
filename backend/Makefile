@@ -1,16 +1,29 @@
-.PHONY: build migrate jetgen start test
+.PHONY: build migrate jetgen start test delete_job
+
+DB_HOST ?= localhost
+DB_PORT ?=3306
+DB_ROOT_USER ?= root
+DB_ROOT_PASSWORD ?= root
+DB_USER ?= folio
+DB_PASSWORD ?= folio
+DB_NAME ?= folio
+DB_POOL_SIZE ?= 5
+MIGRATIONS_DIR ?= lib/db/migrations
 
 build:
 	CGO_ENABLED=0 go build -o folio-tracker ./cmd
 
 migrate: build
-	DB_HOST=localhost DB_PORT=3306 DB_ROOT_USER=root DB_ROOT_PASSWORD=root DB_FOLIO_USER=folio DB_FOLIO_PASSWORD=folio DB_NAME=folio DB_POOL_SIZE=5 MIGRATIONS_DIR=lib/db/migrations ./folio-tracker --app migration
+	@ DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_ROOT_USER=$(DB_ROOT_USER) DB_ROOT_PASSWORD=$(DB_ROOT_PASSWORD) DB_FOLIO_USER=$(DB_USER) DB_FOLIO_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_POOL_SIZE=$(DB_POOL_SIZE) MIGRATIONS_DIR=$(MIGRATIONS_DIR) ./folio-tracker --app migration
 
 jetgen: build
-	DB_HOST=localhost DB_PORT=3306 DB_ROOT_USER=root DB_ROOT_PASSWORD=root DB_FOLIO_USER=folio DB_FOLIO_PASSWORD=folio DB_NAME=folio DB_POOL_SIZE=5 MIGRATIONS_DIR=lib/db/migrations ./folio-tracker --app jetgen --out ./lib/db/repository
+	@ DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_ROOT_USER=$(DB_ROOT_USER) DB_ROOT_PASSWORD=$(DB_ROOT_PASSWORD) DB_FOLIO_USER=$(DB_USER) DB_FOLIO_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_POOL_SIZE=$(DB_POOL_SIZE) MIGRATIONS_DIR=$(MIGRATIONS_DIR) ./folio-tracker --app jetgen --out ./lib/db/repository
 
 start: build
-	DB_HOST=localhost DB_PORT=3306 DB_ROOT_USER=root DB_ROOT_PASSWORD=root DB_FOLIO_USER=folio DB_FOLIO_PASSWORD=folio DB_NAME=folio DB_POOL_SIZE=5 MIGRATIONS_DIR=lib/db/migrations ./folio-tracker --app api
+	@ DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_ROOT_USER=$(DB_ROOT_USER) DB_ROOT_PASSWORD=$(DB_ROOT_PASSWORD) DB_FOLIO_USER=$(DB_USER) DB_FOLIO_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_POOL_SIZE=$(DB_POOL_SIZE) MIGRATIONS_DIR=$(MIGRATIONS_DIR) ./folio-tracker --app api
+
+delete_job:
+	@ DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) ./lib/db/scripts/delete_job.sh $(JOB_ID)
 
 test:
 	go test -v ./...
