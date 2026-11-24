@@ -11,6 +11,7 @@ type Instrument interface {
 
 type ImportRepo interface {
 	Create(ctx context.Context, imp *domain.Import) error
+	GetStatus(ctx context.Context, p *domain.IDAndUserID) (*domain.ImportIDUserAndStatus, error)
 }
 
 type ImportFileRepo interface {
@@ -19,6 +20,7 @@ type ImportFileRepo interface {
 
 type JobRepo interface {
 	Create(ctx context.Context, job *domain.Job) error
+	GetStatus(ctx context.Context, p *domain.IDAndUserID) (*domain.JobIDUserAndStatus, error)
 }
 
 type Transactor interface {

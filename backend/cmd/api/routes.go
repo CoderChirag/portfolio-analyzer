@@ -33,6 +33,7 @@ func registerRoutes(r *chi.Mux, handlers handlerStore) {
 	// Uploads
 	r.With(httpauthmiddleware.Auth).Route("/import", func(r chi.Router) {
 		r.Post("/stocks/transactions", handlers.Uploads.ImportStockTransactions)
+		r.Get("/status", handlers.Uploads.ImportStatus)
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {

@@ -10,6 +10,7 @@ var (
 	ErrBadRequest        = errors.New("malformed request body")
 	ErrMultipartParse    = errors.New("error parsing multipart form")
 	ErrUnauthorized      = errors.New("user unauthorized")
+	ErrMissingXAuthToken = errors.New("missing x-auth-token")
 	ErrForbidden         = errors.New("access forbidden")
 	ErrMultipartFormFile = errors.New("error getting multipart form file")
 	ErrEntityTooLarge    = errors.New("entity too large")
@@ -47,6 +48,11 @@ func classify(err error) (int, *errorBody) {
 		return http.StatusUnauthorized, &errorBody{
 			Code: "UNAUTHORIZED",
 			Msg:  ErrUnauthorized.Error(),
+		}
+	case errors.Is(err, ErrMissingXAuthToken):
+		return http.StatusUnauthorized, &errorBody{
+			Code: "UNAUTHORIZED",
+			Msg:  ErrMissingXAuthToken.Error(),
 		}
 	case errors.Is(err, ErrForbidden):
 		return http.StatusForbidden, &errorBody{

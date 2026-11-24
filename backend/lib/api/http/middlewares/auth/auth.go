@@ -16,7 +16,7 @@ func Auth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		userID := r.Header.Get("X-Auth-Token")
 		if userID == "" {
-			httpresponse.JSONError(w, r, ErrMissingXAuthToken)
+			httpresponse.JSONError(w, r, httpresponse.ErrMissingXAuthToken)
 			return
 		}
 		id, err := domain.ParseID(userID)

@@ -38,3 +38,11 @@ func toJobModel(d *domain.Job) *model.Jobs {
 
 	return job
 }
+
+func toIDUserAndStatusDomain(m *model.Jobs) *domain.JobIDUserAndStatus {
+	return &domain.JobIDUserAndStatus{
+		ID:     m.ID,
+		UserID: *m.UserID,
+		Status: m.Status,
+	}
+}

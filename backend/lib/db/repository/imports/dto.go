@@ -42,3 +42,11 @@ func toImportModel(d *domain.Import) *model.Imports {
 	}
 	return imp
 }
+
+func toIDUserAndStatusDomain(m *model.Imports) *domain.ImportIDUserAndStatus {
+	return &domain.ImportIDUserAndStatus{
+		ID:     m.ID,
+		UserID: m.UserID,
+		Status: m.Status,
+	}
+}

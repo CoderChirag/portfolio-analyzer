@@ -67,7 +67,7 @@ func (h *HTTPHandler) ImportStockTransactions(w http.ResponseWriter, r *http.Req
 	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
 	userID, ok := uid.(domain.ID)
 	if !ok {
-		httpresponse.JSONError(w, r, httpresponse.ErrForbidden)
+		httpresponse.JSONError(w, r, httpresponse.ErrUnauthorized)
 		return
 	}
 
@@ -127,11 +127,61 @@ func (h *HTTPHandler) ImportStockTransactions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	job, err := h.svc.Import(r.Context(), p, contentType)
+	status, err := h.svc.Import(r.Context(), p, contentType)
 	if err != nil {
 		httpresponse.JSONError(w, r, err)
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusAccepted, (&JobStatusResponse{}).FromDomain(job))
+	httpresponse.JSON(w, http.StatusAccepted, (&ImportJobStatusRes{}).FromDomain(status))
+}
+
+func (h *HTTPHandler) ImportStatus(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+
+	var errs apperr.ValidationError
+	j := query.Get("job_id")
+	if j == "" {
+		errs.Add("job_id", ErrJobIDRequired)
+		httpresponse.JSONError(w, r, errs)
+		return
+	}
+	jobID, err := domain.ParseID(j)
+	if err != nil {
+		errs.Add("job_id", ErrJobIDInvalid)
+		httpresponse.JSONError(w, r, errs)
+		return
+	}
+
+	i := query.Get("import_id")
+	if i == "" {
+		errs.Add("import_id", ErrImportIDRequired)
+		httpresponse.JSONError(w, r, errs)
+		return
+	}
+	importID, err := domain.ParseID(i)
+	if err != nil {
+		errs.Add("import_id", ErrImportIDInvalid)
+		httpresponse.JSONError(w, r, errs)
+		return
+	}
+
+	uid := r.Context().Value(httpauthmiddleware.UserIDKey)
+	userID, ok := uid.(domain.ID)
+	if !ok {
+		httpresponse.JSONError(w, r, httpresponse.ErrUnauthorized)
+		return
+	}
+
+	status, err := h.svc.GetImportStatus(r.Context(), &domain.GetImportStatusParams{
+		UserID:   userID,
+		JobID:    jobID,
+		ImportID: importID,
+	})
+	if err != nil {
+		httpresponse.JSONError(w, r, err)
+		return
+	}
+
+	httpresponse.JSON(w, http.StatusOK, (&ImportJobStatusRes{}).FromDomain(status))
 }

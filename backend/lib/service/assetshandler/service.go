@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	logPrefix       = "service:AssetsHandlerService"
-	importLogPrefix = "Import"
+	logPrefix                = "service:AssetsHandlerService"
+	importLogPrefix          = "Import"
+	getImportStatusPrefix    = "GetImportStatus"
+	getImportStatusLogPrefix = "GetImportStatus"
 )
 
 type Service struct {
@@ -36,7 +38,7 @@ func (s *Service) getInstrument(a domain.AssetTypeCode) Instrument {
 	return nil
 }
 
-func (s *Service) Import(ctx context.Context, p *domain.ImportParams, contentType domain.ContentType) (*domain.Job, error) {
+func (s *Service) Import(ctx context.Context, p *domain.ImportParams, contentType domain.ContentType) (*domain.ImportJobStatus, error) {
 	imp, err := domain.NewImport(p)
 	if err != nil {
 		return nil, fmt.Errorf("%s.%s: new import: %w", logPrefix, importLogPrefix, err)
@@ -75,5 +77,46 @@ func (s *Service) Import(ctx context.Context, p *domain.ImportParams, contentTyp
 		return nil, fmt.Errorf("%s.%s: WithinTx: %w", logPrefix, importLogPrefix, err)
 	}
 
-	return job, nil
+	return &domain.ImportJobStatus{
+		UserID:       job.UserID,
+		JobID:        job.ID,
+		ImportID:     imp.ID,
+		JobStatus:    job.Status,
+		ImportStatus: imp.Status,
+	}, nil
+}
+
+func (s *Service) GetImportStatus(ctx context.Context, p *domain.GetImportStatusParams) (*domain.ImportJobStatus, error) {
+	var job *domain.JobIDUserAndStatus
+	var imp *domain.ImportIDUserAndStatus
+	var err error
+	if err := s.transactor.WithinTx(ctx, func(ctx context.Context, r *TxRepos) error {
+		job, err = r.Jobs.GetStatus(ctx, &domain.IDAndUserID{
+			UserID: p.UserID,
+			ID:     p.JobID,
+		})
+		if err != nil {
+			return fmt.Errorf("%s.%s: get job: %w", logPrefix, getImportStatusLogPrefix, err)
+		}
+
+		imp, err = r.Imports.GetStatus(ctx, &domain.IDAndUserID{
+			UserID: p.UserID,
+			ID:     p.ImportID,
+		})
+		if err != nil {
+			return fmt.Errorf("%s.%s: get import: %w", logPrefix, getImportStatusLogPrefix, err)
+		}
+
+		return nil
+	}, fmt.Sprintf("%s_%s_%s", "get_import_status", p.UserID, p.JobID)); err != nil {
+		return nil, fmt.Errorf("%s.%s: WithinTx: %w", logPrefix, getImportStatusLogPrefix, err)
+	}
+
+	return &domain.ImportJobStatus{
+		UserID:       imp.UserID,
+		JobID:        job.ID,
+		ImportID:     imp.ID,
+		JobStatus:    job.Status,
+		ImportStatus: imp.Status,
+	}, nil
 }
