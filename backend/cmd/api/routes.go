@@ -2,6 +2,7 @@ package api
 
 import (
 	httpauthmiddleware "coderchirag/folio-tracker/lib/api/http/middlewares/auth"
+	httprequestidmiddlware "coderchirag/folio-tracker/lib/api/http/middlewares/requestid"
 	httpresponsewriter "coderchirag/folio-tracker/lib/api/http/middlewares/responsewriter"
 	httpresponse "coderchirag/folio-tracker/lib/api/http/response"
 	"coderchirag/folio-tracker/lib/apperr"
@@ -13,7 +14,7 @@ import (
 
 func registerRoutes(r *chi.Mux, handlers handlerStore) {
 	r.Use(
-		middleware.RequestID,
+		httprequestidmiddlware.RequestID,
 		middleware.Logger,
 		httpresponsewriter.ResponseWriter,
 		middleware.Recoverer,

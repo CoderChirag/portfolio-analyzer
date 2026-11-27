@@ -55,7 +55,7 @@ func (s *Service) Import(ctx context.Context, p *domain.ImportParams, contentTyp
 		return nil, fmt.Errorf("%s.%s: new import_file: %w", logPrefix, importLogPrefix, err)
 	}
 
-	job, err := domain.NewImportJob(imp, time.Now().UTC().Truncate(time.Millisecond))
+	job, err := domain.NewImportJob(imp, time.Now().UTC().Truncate(time.Millisecond), p.RequestID)
 	if err != nil {
 		// Unwapping error to make every error a 500 here
 		return nil, fmt.Errorf("%s.%s: new import_job: %s", logPrefix, importLogPrefix, err.Error())

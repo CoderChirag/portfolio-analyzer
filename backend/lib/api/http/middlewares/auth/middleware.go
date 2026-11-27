@@ -8,13 +8,14 @@ import (
 )
 
 const (
-	UserIDKey = "userID"
+	UserIDHeader = "X-Auth-Token"
+	UserIDKey    = "userID"
 )
 
 func Auth(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		userID := r.Header.Get("X-Auth-Token")
+		userID := r.Header.Get(UserIDHeader)
 		if userID == "" {
 			httpresponse.JSONError(w, r, httpresponse.ErrMissingXAuthToken)
 			return

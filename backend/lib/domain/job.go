@@ -203,11 +203,12 @@ func JobErrorText(err error) string {
 
 // ImportJobPayload is the payload of an import.process job.
 type ImportJobPayload struct {
-	ImportID ID `json:"importId"`
+	RequestID string `json:"requestId,omitempty"`
+	ImportID  ID     `json:"importId"`
 }
 
 // NewImportJob queues processing of imp. The dedupe key allows one active job per import.
-func NewImportJob(imp *Import, now time.Time) (*Job, error) {
+func NewImportJob(imp *Import, now time.Time, requestID string) (*Job, error) {
 	if imp == nil {
 		var errs apperr.ValidationError
 		errs.Add("import", ErrJobImportRequired)
@@ -215,8 +216,11 @@ func NewImportJob(imp *Import, now time.Time) (*Job, error) {
 	}
 	userID := imp.UserID
 	return NewJob(&JobParams{
-		Type:        JobImportProcess,
-		Payload:     ImportJobPayload{ImportID: imp.ID},
+		Type: JobImportProcess,
+		Payload: ImportJobPayload{
+			RequestID: requestID,
+			ImportID:  imp.ID,
+		},
 		DedupeKey:   string(JobImportProcess) + ":" + imp.ID.String(),
 		UserID:      userID,
 		AvailableAt: now,

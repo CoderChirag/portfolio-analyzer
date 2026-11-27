@@ -2,6 +2,7 @@ package httpuploadshandler
 
 import (
 	httpauthmiddleware "coderchirag/folio-tracker/lib/api/http/middlewares/auth"
+	httprequestidmiddlware "coderchirag/folio-tracker/lib/api/http/middlewares/requestid"
 	httpresponse "coderchirag/folio-tracker/lib/api/http/response"
 	"coderchirag/folio-tracker/lib/apperr"
 	"coderchirag/folio-tracker/lib/domain"
@@ -70,6 +71,8 @@ func (h *HTTPHandler) ImportStockTransactions(w http.ResponseWriter, r *http.Req
 		httpresponse.JSONError(w, r, httpresponse.ErrUnauthorized)
 		return
 	}
+	rid := r.Context().Value(httprequestidmiddlware.RequestIDKey)
+	requestID, _ := rid.(string)
 
 	r.Body = http.MaxBytesReader(w, r.Body, domain.MaxImportFileSize+1<<20) // file + form overhead
 	mr, err := r.MultipartReader()
@@ -79,6 +82,7 @@ func (h *HTTPHandler) ImportStockTransactions(w http.ResponseWriter, r *http.Req
 	}
 
 	p := &domain.ImportParams{
+		RequestID:    requestID,
 		UserID:       userID,
 		DataSourceID: ds.ID,
 		Kind:         *importKind,
@@ -133,7 +137,7 @@ func (h *HTTPHandler) ImportStockTransactions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusAccepted, (&ImportJobStatusRes{}).FromDomain(status))
+	httpresponse.JSON(w, http.StatusAccepted, (&ImportJobStatusRes{}).FromDomain(status, requestID))
 }
 
 func (h *HTTPHandler) ImportStatus(w http.ResponseWriter, r *http.Request) {
@@ -183,5 +187,5 @@ func (h *HTTPHandler) ImportStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpresponse.JSON(w, http.StatusOK, (&ImportJobStatusRes{}).FromDomain(status))
+	httpresponse.JSON(w, http.StatusOK, (&ImportJobStatusRes{}).FromDomain(status, ""))
 }

@@ -163,6 +163,7 @@ type Import struct {
 }
 
 type ImportParams struct {
+	RequestID    string
 	UserID       ID
 	DataSourceID DataSourceID
 	Kind         ImportKind
