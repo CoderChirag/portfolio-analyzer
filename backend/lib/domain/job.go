@@ -85,6 +85,9 @@ var (
 	ErrJobLastErrorTooLong  = errors.New("last error must be at most 2048 characters")
 	ErrJobImportRequired    = errors.New("import is required")
 	ErrDuplicateJob         = errors.New("duplicate job")
+
+	ErrLeaseLost    = errors.New("lease lost")
+	ErrLeaseExpired = errors.New("lease expired")
 )
 
 // Job is one unit of background work. Its business outcome lives elsewhere (e.g. imports).
@@ -193,6 +196,10 @@ func (j *Job) Validate() error {
 	}
 
 	return errs.Err()
+}
+
+func (j *Job) CanRetry() bool {
+	return j.Attempts < j.MaxAttempts
 }
 
 // JobErrorText fits a handler's error into last_error. Error text is unbounded

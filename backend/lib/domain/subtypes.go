@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"time"
+)
+
 type IDAndUserID struct {
 	ID     ID
 	UserID ID
@@ -15,4 +19,11 @@ type JobIDUserAndStatus struct {
 	UserID ID
 	ID     ID
 	Status JobStatus
+}
+
+type JobClaim struct {
+	WorkerID string
+	Type     JobType
+	Limit    int
+	Lease    time.Duration
 }

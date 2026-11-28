@@ -14,6 +14,8 @@ var (
 	ErrInvalidFile     = errors.New("invalid file")
 	ErrInvalidFileName = errors.New("invalid file name")
 	ErrFileTooLarge    = errors.New("file is too large")
+
+	ErrPermanent = errors.New("permanent error")
 )
 
 // DuplicateError is a unique-key violation. errors.Is matches ErrDuplicate

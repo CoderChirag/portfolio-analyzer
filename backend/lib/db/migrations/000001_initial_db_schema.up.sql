@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   -- Keep the claim index small: a cleanup job deletes succeeded and cancelled jobs after about 7 days,
   -- and failed ones after about 30. The table then stays proportional to recent work, 
   -- not all-time work, which keeps claims fast regardless of history.
-  KEY `idx_jobs_claim` (`status`, `available_at`),
+  KEY `idx_jobs_claim` (`status`, `job_type`, `available_at`),
   KEY `idx_jobs_user` (`user_id`),
   CONSTRAINT `fk_jobs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `chk_jobs_status` CHECK(`status` IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),

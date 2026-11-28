@@ -46,3 +46,37 @@ func toIDUserAndStatusDomain(m *model.Jobs) *domain.JobIDUserAndStatus {
 		Status: m.Status,
 	}
 }
+
+func toJobDomain(m *model.Jobs) *domain.Job {
+	job := &domain.Job{
+		ID:      m.ID,
+		Type:    m.JobType,
+		Payload: m.Payload,
+
+		Status:      m.Status,
+		Attempts:    m.Attempts,
+		MaxAttempts: m.MaxAttempts,
+		AvailableAt: m.AvailableAt,
+
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+	}
+
+	if m.DedupeKey != nil {
+		job.DedupeKey = *m.DedupeKey
+	}
+	if m.UserID != nil && !m.UserID.IsZero() {
+		job.UserID = *m.UserID
+	}
+	if m.LockedBy != nil {
+		job.LockedBy = *m.LockedBy
+	}
+	if m.LastError != nil {
+		job.LastError = *m.LastError
+	}
+	if m.FinishedAt != nil && !m.FinishedAt.IsZero() {
+		job.FinishedAt = *m.FinishedAt
+	}
+
+	return job
+}
